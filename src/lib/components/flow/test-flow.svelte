@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { writable } from 'svelte/store';
-	import { SvelteFlow, Controls, Background, BackgroundVariant, MiniMap } from '@xyflow/svelte';
-
+	import { SvelteFlow, Controls, Background, BackgroundVariant, MiniMap, type ColorMode } from '@xyflow/svelte';
+    import {mode} from 'mode-watcher';
 	// 👇 this is important! You need to import the styles for Svelte Flow to work
 	import '@xyflow/svelte/dist/style.css';
 
@@ -33,6 +33,14 @@
 	]);
 
 	const snapGrid: [number, number] = [25, 25];
+    let colorMode: ColorMode = "dark";
+    $:if ($mode === 'light') {
+        colorMode = "light";
+    } else if ($mode === 'dark') {
+        colorMode = "dark";
+    }else {
+        colorMode = "system";
+    }
 </script>
 
 <!--
@@ -44,6 +52,7 @@
 		{nodes}
 		{edges}
 		{snapGrid}
+        {colorMode}
 		fitView
 		on:nodeclick={(event) => console.log('on node click', event.detail.node)}
 	>
