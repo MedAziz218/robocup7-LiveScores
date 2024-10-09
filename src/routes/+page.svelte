@@ -19,7 +19,9 @@
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
 	import { Textarea } from '$lib/components/ui/textarea/index.js';
 	import * as HoverCard from '$lib/components/ui/hover-card/index.js';
-	import { LightSwtich } from '$lib/components/custom';
+
+	import { LightSwtich,CsvUploader } from '$lib/components/custom';
+	import { TestFlow } from '$lib/components/flow';
 	// import PlaygroundLight from "$lib/img/examples/playground-light.png?enhanced";
 	// import PlaygroundDark from "$lib/img/examples/playground-dark.png?enhanced";
 </script>
@@ -28,20 +30,21 @@
 	<!-- <enhanced:img src={PlaygroundLight} alt="Playground" class="block dark:hidden" />
 	<enhanced:img src={PlaygroundDark} alt="Playground" class="hidden dark:block" /> -->
 </div>
-<div class="hidden h-screen flex-col md:flex">
+<div class="flex h-screen flex-col ">
 	<div
 		class="container flex flex-col items-start justify-between space-y-2 py-4 sm:flex-row sm:items-center sm:space-y-0 md:h-16"
 	>
 		<h2 class="text-lg font-semibold">Playground</h2>
 		<div class="ml-auto flex w-full space-x-2 sm:justify-end">
-			<PresetSelector {presets} />
-			<PresetNew/>
-			<PresetLoad/>
-			<PresetSave/>
-			<div class="hidden space-x-2 md:flex">
+			<!-- <PresetSelector {presets} /> -->
+			<!-- <PresetNew/> -->
+			<!-- <PresetLoad/> -->
+			<!-- <PresetSave/> -->
+			<CsvUploader/>
+			<!-- <div class="hidden space-x-2 md:flex">
 				<CodeViewer />
 				<PresetShare />
-			</div>
+			</div> -->
 			<LightSwtich />
 			<PresetActions />
 		</div>
@@ -50,7 +53,7 @@
 	<Tabs.Root value="complete" class="flex-1">
 		<div class="container h-full py-6">
 			<div class="grid h-full items-stretch gap-6 md:grid-cols-[1fr_200px]">
-				<div class="hidden flex-col space-y-4 sm:flex md:order-2">
+				<div class="hidden flex-col space-y-4 sm:flex order-1 md:order-2">
 					<div class="grid gap-2">
 						<HoverCard.Root openDelay={200}>
 							<HoverCard.Trigger asChild let:builder>
@@ -133,7 +136,9 @@
 				</div>
 				<div class="md:order-1">
 					<Tabs.Content value="complete" class="mt-0 h-full w-full border-0 p-0">
-						<div class="flex h-full flex-col space-y-4">placeholder1</div>
+						<div class="flex h-full flex-col space-y-4">
+							<TestFlow/>
+						</div>
 					</Tabs.Content>
 					<Tabs.Content value="insert" class="mt-0 h-full w-full border-0 p-0">
 						<div class="flex flex-col space-y-4">placeholder2</div>
