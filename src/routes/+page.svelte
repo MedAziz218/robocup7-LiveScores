@@ -5,7 +5,7 @@
 		MaxLengthSelector,
 		ModelSelector,
 		PresetActions,
-		PresetSave,
+		PresetSave,PresetNew,PresetLoad,
 		PresetSelector,
 		PresetShare,
 		TemperatureSelector,
@@ -35,7 +35,9 @@
 		<h2 class="text-lg font-semibold">Playground</h2>
 		<div class="ml-auto flex w-full space-x-2 sm:justify-end">
 			<PresetSelector {presets} />
-			<PresetSave />
+			<PresetNew/>
+			<PresetLoad/>
+			<PresetSave/>
 			<div class="hidden space-x-2 md:flex">
 				<CodeViewer />
 				<PresetShare />
