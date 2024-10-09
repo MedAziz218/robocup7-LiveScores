@@ -1,0 +1,8 @@
+<script>
+    import { ModeWatcher } from 'mode-watcher';
+	import '../app.css';
+
+</script>
+<ModeWatcher defaultMode={"system"} />
+
+<slot></slot>
