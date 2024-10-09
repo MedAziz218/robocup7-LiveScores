@@ -11,17 +11,22 @@
 		type Node,
 		type Edge
 	} from '@xyflow/svelte';
-	import { mode } from 'mode-watcher';
-	// 👇 this is important! You need to import the styles for Svelte Flow to work
 	import '@xyflow/svelte/dist/style.css';
-
-	// We are using writables for the nodes and edges to sync them easily. When a user drags a node for example, Svelte Flow updates its position.
+	import ParticipantNode from './participant-node.svelte';
+	import MatchNode from './match-node.svelte';
 	import { initialNodes, initialEdges } from './nodes-and-edges';
-
+	import { mode } from 'mode-watcher';
 	const nodes = writable<Node[]>(initialNodes);
 
 	const edges = writable<Edge[]>(initialEdges);
-
+	const nodeTypes = {
+		participant: ParticipantNode,
+		match: MatchNode
+	};
+	const defaultEdgeOptions = {
+		type: 'smoothstep',
+		markerEnd: 'edge-circle'
+	};
 	const snapGrid: [number, number] = [25, 25];
 
 	let colorMode: ColorMode = 'dark';
@@ -44,11 +49,16 @@
 		{edges}
 		{colorMode}
 		{snapGrid}
+		{nodeTypes}
+        {defaultEdgeOptions}
 		fitView
 		on:nodeclick={(event) => console.log('on node click', event.detail.node)}
 	>
 		<Controls />
 		<Background variant={BackgroundVariant.Dots} />
-		<MiniMap style="transition-duration:300ms;" class="opacity-0 hover:opacity-60 transition-opacity" />
+		<MiniMap
+			style="transition-duration:300ms;"
+			class="opacity-0 transition-opacity hover:opacity-60"
+		/>
 	</SvelteFlow>
 </div>

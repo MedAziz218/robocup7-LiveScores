@@ -5,6 +5,9 @@ const config: Config = {
 	darkMode: ["class"],
 	content: ["./src/**/*.{html,js,svelte,ts}"],
 	safelist: ["dark"],
+	important: true,
+  plugins: [],
+
 	theme: {
 		container: {
 			center: true,
