@@ -29,7 +29,6 @@
 		getNodesAndEdgesFromTournament,
 		type Tournament
 	} from './nodes-and-edges';
-	import { useNodes } from '@xyflow/svelte';
 
 	const tournament = writable<Tournament>([]);
 	const nodes = writable<Node[]>([]);
