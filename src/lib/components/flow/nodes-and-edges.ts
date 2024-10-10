@@ -2,7 +2,6 @@ import { Position, type Node, type Edge } from '@xyflow/svelte';
 export const initialNodes: Node[] = [];
 export const initialEdges: Edge[] = [];
 
-
 function closestPowerOfTwo(n: number) {
 	if (n <= 0) {
 		return 0; // 2^0 = 1 is the closest power of 2 for non-positive numbers
@@ -24,31 +23,39 @@ function closestPowerOfTwo(n: number) {
 type Match = { id: number; winnerGoesTo: number };
 type Round = Match[];
 type Tournament = Round[];
-const empty_teams = [{id:-1,name:'-'},{id:-1,name:'-'}]
+const empty_teams = [
+	{ id: -1, name: '-' },
+	{ id: -1, name: '-' }
+];
 const Xoffset = 200;
 const nodeHeight = 50;
 const Yoffset = 10;
 
-function createNodeFromMatch(match: Match, roundNumber: number,index:number,start:number): Node {
-    const off = (roundNumber-1==0)? (nodeHeight+Yoffset)/2 : 0
-    const off2 = (roundNumber-2==0)? (nodeHeight+Yoffset) :0;
-    const off3 = (roundNumber-3==0)? (nodeHeight+Yoffset)*1.5 :0;
+function createNodeFromMatch(
+	match: Match,
+	roundNumber: number,
+	index: number,
+	start: number
+): Node {
+	let off =
+		(nodeHeight + Yoffset) * Math.pow(2, roundNumber - 1) * (index - 1) +
+		((nodeHeight + Yoffset) * (Math.pow(2, roundNumber - 1) - 1)) / 2;
 
-    let node:Node = {
-     	id: match.id.toString(),
-     	data: {
-     		match: {
-     			id: match.id,
-     			teams: empty_teams ,
-     		},
-     	},
-     	position: { x: Xoffset*roundNumber, y: ((nodeHeight+Yoffset)*roundNumber*(index) ) },
-     	type: 'match',
-     	class: 'svelte-flow__node-default p-0',
-     	sourcePosition: Position.Right,
-     	targetPosition: Position.Left,
-     };
-     return node;
+	let node: Node = {
+		id: match.id.toString(),
+		data: {
+			match: {
+				id: match.id,
+				teams: empty_teams
+			}
+		},
+		position: { x: Xoffset * roundNumber, y: off },
+		type: 'match',
+		class: 'svelte-flow__node-default p-0',
+		sourcePosition: Position.Right,
+		targetPosition: Position.Left
+	};
+	return node;
 }
 function generateRound(start: number, roundNumber: number, k: number): Round {
 	let res: Round = [];
@@ -59,7 +66,7 @@ function generateRound(start: number, roundNumber: number, k: number): Round {
 		};
 
 		res.push(match);
-    initialNodes.push(createNodeFromMatch(match, roundNumber,i,start))
+		initialNodes.push(createNodeFromMatch(match, roundNumber, i, start));
 	}
 	return res;
 }
@@ -78,5 +85,4 @@ function generateTournament(numberOfTeams: number): Tournament {
 
 	return res;
 }
-console.log(generateTournament(16));
-
+console.log(generateTournament(64));
