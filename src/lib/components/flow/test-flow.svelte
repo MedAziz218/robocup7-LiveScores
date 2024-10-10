@@ -38,13 +38,12 @@
 		// 	}
 		// }, 500);
 		setTimeout(() => {
-			$tournament = generateTournament(8)
+			$tournament = generateTournament(25);
 		}, 500);
-		setTimeout(() => {
-			$tournament = generateTournament(32)
-			
-			
-		}, 2000);
+		// setTimeout(() => {
+		// 	$tournament = generateTournament(32)
+
+		// }, 2000);
 	});
 	const nodeTypes = {
 		participant: ParticipantNode,

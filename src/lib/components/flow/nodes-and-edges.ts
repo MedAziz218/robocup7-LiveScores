@@ -1,4 +1,5 @@
 import { Position, type Node, type Edge } from '@xyflow/svelte';
+import { quadInOut } from 'svelte/easing';
 
 function closestLowerPowerOfTwo(n: number) {
 	if (n <= 0) {
@@ -19,11 +20,11 @@ function closestLowerPowerOfTwo(n: number) {
 	// return lowerDiff < upperDiff ? lowerValue : upperValue; // Return the closest power of 2
 }
 
-type Team = {id:number; name:string, club?:string}
+type Team = { id: number; name: string; club?: string };
 type Match = { id: number; winnerGoesTo: number; node: Node; edge: Edge };
 type Round = Match[];
 export type Tournament = Round[];
-const empty_teams:Team[] = [
+const empty_teams: Team[] = [
 	{ id: -1, name: '-' },
 	{ id: -1, name: '-' }
 ];
@@ -36,9 +37,10 @@ export function createNodeFromMatch(
 	teams: Team[],
 	roundNumber: number,
 	index: number,
-	XoffsetModifer = 0
+	XoffsetModifer = 0,
+	YoffsetModifer = 0
 ): Node {
-	const p = Math.pow(2, roundNumber - 1);
+	const p = Math.pow(2, roundNumber + YoffsetModifer - 1);
 	let Yoff = (nodeHeight + Yoffset) * p * (index - 1) + ((nodeHeight + Yoffset) * (p - 1)) / 2;
 	let Xoff = Xoffset * (roundNumber + XoffsetModifer);
 	let node: Node = {
@@ -69,7 +71,13 @@ function createEdgeFromMatch(matchID: number, matchWinnerGoesTo: number): Edge {
 	};
 	return edge;
 }
-function generateRound(start: number, roundNumber: number, k: number): Round {
+function generateRound(
+	start: number,
+	roundNumber: number,
+	k: number,
+	XoffsetModifer = 0,
+	YoffsetModifer = 0
+): Round {
 	let res: Round = [];
 	for (let i = 1; i <= Math.pow(2, k - roundNumber); i++) {
 		const matchID = i + start;
@@ -77,7 +85,14 @@ function generateRound(start: number, roundNumber: number, k: number): Round {
 		let match: Match = {
 			id: matchID,
 			winnerGoesTo: winnerGoesTo,
-			node: createNodeFromMatch(matchID,empty_teams, roundNumber, i),
+			node: createNodeFromMatch(
+				matchID,
+				empty_teams,
+				roundNumber,
+				i,
+				XoffsetModifer,
+				YoffsetModifer
+			),
 			edge: createEdgeFromMatch(matchID, winnerGoesTo)
 		};
 
@@ -85,20 +100,119 @@ function generateRound(start: number, roundNumber: number, k: number): Round {
 	}
 	return res;
 }
+function generateEliminationRoundCase1(
+	start: number,
+	roundNumber: number,
+	k: number,
+	q: number
+): Round {
+	let res: Round = [];
+	for (let i = 1; i <= q; i++) {
+		const matchID = i + start;
+		const winnerGoesTo = Math.ceil(i) + start + q + (Math.pow(2, k - 1) - q);
+		let match: Match = {
+			id: matchID,
+			winnerGoesTo: winnerGoesTo,
+			node: createNodeFromMatch(matchID, empty_teams, roundNumber, i+(Math.pow(2, k - 1) - q), -1),
+			edge: createEdgeFromMatch(matchID, winnerGoesTo)
+		};
 
-// function generateEliminationRound(start: number, roundNumber: number, q:number): Round {
-// 	let res: Round = [];
-// 	for (let i = 1; i <= q; i++) {
-// 		let match: Match = {
-// 			id: i + start,
-// 			winnerGoesTo: Math.ceil(i / 2) + start + q
-// 		};
+		res.push(match);
+	}
+	// for (let i = 1; i <= q; i++) {
+	// 	const matchID = i + start;
+	// 	const winnerGoesTo =  start + q + Math.pow(2, k - 1)-Math.ceil(i) +1;
+	// 	let match: Match = {
+	// 		id: matchID,
+	// 		winnerGoesTo: winnerGoesTo,
+	// 		node: createNodeFromMatch(matchID,empty_teams, roundNumber, Math.pow(2, k - 1)-Math.ceil(i) +1,-1),
+	// 		edge: createEdgeFromMatch(matchID, winnerGoesTo)
+	// 	};
 
-// 		res.push(match);
-// 		initialNodes.push(createNodeFromMatch(match, roundNumber, i,-1));
-// 	}
-// 	return res;
-// }
+	// 	res.push(match);
+	// }
+	return res;
+}
+function generateEliminationRoundCase2(
+	start: number,
+	roundNumber: number,
+	k: number,
+	q: number,
+	x: number,
+	XoffsetModifer = -1,
+	YoffsetModifer = 0
+): Round {
+	let res: Round = [];
+	for (let i = 1; i <= (q-x)*2; i++) {
+		const matchID = i + start;
+		const winnerGoesTo = Math.ceil(i / 2) + start + q;
+		let match: Match = {
+			id: matchID,
+			winnerGoesTo: winnerGoesTo,
+			node: createNodeFromMatch(
+				matchID,
+				empty_teams,
+				roundNumber,
+				i,
+				XoffsetModifer,
+				YoffsetModifer
+			),
+			edge: createEdgeFromMatch(matchID, winnerGoesTo)
+		};
+
+		res.push(match);
+	}
+
+	let b = (q-x)*2;
+	for (let i = b+1; i <=q; i++) {
+		const matchID = i + start;
+		const winnerGoesTo = Math.ceil(i) + q - Math.floor(b/2);
+		let match: Match = {
+			id: matchID,
+			winnerGoesTo: winnerGoesTo,
+			node: createNodeFromMatch(
+				matchID,
+				empty_teams,
+				roundNumber,
+				i+(i-b),
+				XoffsetModifer,
+				YoffsetModifer
+			),
+			edge: createEdgeFromMatch(matchID, winnerGoesTo)
+		};
+
+		res.push(match);
+	}
+	
+	return res;
+	// let res: Round = [];
+	// for (let i = 1; i <= x; i++) {
+	// 	const matchID = i + start;
+	// 	const winnerGoesTo =  start + q + Math.pow(2, k - 1)-Math.ceil(i/2)+1 ;
+	// 	let match: Match = {
+	// 		id: matchID,
+	// 		winnerGoesTo: winnerGoesTo,
+	// 		node: createNodeFromMatch(matchID,empty_teams, roundNumber, Math.pow(2, k)-Math.ceil(i) +1,-1),
+	// 		edge: createEdgeFromMatch(matchID, winnerGoesTo)
+	// 	};
+
+	// 	res.push(match);
+	// }
+	// for (let i = x+1; i <= q; i++) {
+	// 	const matchID = i + start;
+	// 	const winnerGoesTo =  start + q + Math.pow(2, k - 1)-Math.ceil(i)+1 ;
+	// 	let match: Match = {
+	// 		id: matchID,
+	// 		winnerGoesTo: winnerGoesTo,
+	// 		node: createNodeFromMatch(matchID,empty_teams, roundNumber, Math.pow(2, k)-Math.ceil(i) +1,-1),
+	// 		edge: createEdgeFromMatch(matchID, winnerGoesTo)
+	// 	};
+
+	// 	res.push(match);
+	// }
+	// return res;
+}
+
 export function generateTournament(numberOfTeams: number): Tournament {
 	let n = closestLowerPowerOfTwo(numberOfTeams);
 	let k = Math.log2(n);
@@ -107,16 +221,32 @@ export function generateTournament(numberOfTeams: number): Tournament {
 	let numberOfRounds = k;
 	let tournament: Tournament = [];
 	let start = 0;
-	// if (q>0){
-	// 	if (q<=Math.pow(2,k-1)){
-	// 		res.push(generateEliminationRound(start, 1, q));
-	// 		start += q;
+	let m = 0;
+	if (q > 0) {
+		if (q > Math.pow(2, k - 1)) {
+			let x = Math.pow(2, k - 1);
+			tournament.push(generateEliminationRoundCase2(start, 1, k, q, x));
 
-	// 	}
-	// }
-	for (let i = 1; i <= k; i++) {
-		tournament.push(generateRound(start, i, k));
-		start += Math.pow(2, k - i);
+			start += q;
+
+			for (let i = 1; i <= k; i++) {
+				tournament.push(generateRound(start, i, k, 0, 1));
+				start += Math.pow(2, k - i);
+			}
+		}
+		if (q <= Math.pow(2, k - 1)) {
+			tournament.push(generateEliminationRoundCase1(start, 1, k, q));
+			start += q;
+			for (let i = 1; i <= k; i++) {
+				tournament.push(generateRound(start, i, k));
+				start += Math.pow(2, k - i);
+			}
+		}
+	} else {
+		for (let i = 1; i <= k; i++) {
+			tournament.push(generateRound(start, i, k));
+			start += Math.pow(2, k - i);
+		}
 	}
 
 	return tournament;
