@@ -143,7 +143,8 @@ function generateEliminationRoundCase2(
 	YoffsetModifer = 0
 ): Round {
 	let res: Round = [];
-	for (let i = 1; i <= (q-x)*2; i++) {
+	let b = (q-x)*2
+	for (let i = 1; i <=b ; i++) {
 		const matchID = i + start;
 		const winnerGoesTo = Math.ceil(i / 2) + start + q;
 		let match: Match = {
@@ -163,7 +164,6 @@ function generateEliminationRoundCase2(
 		res.push(match);
 	}
 
-	let b = (q-x)*2;
 	for (let i = b+1; i <=q; i++) {
 		const matchID = i + start;
 		const winnerGoesTo = Math.ceil(i) + q - Math.floor(b/2);

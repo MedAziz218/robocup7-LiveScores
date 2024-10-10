@@ -38,7 +38,7 @@
 		// 	}
 		// }, 500);
 		setTimeout(() => {
-			$tournament = generateTournament(25);
+			$tournament = generateTournament(15);
 		}, 500);
 		// setTimeout(() => {
 		// 	$tournament = generateTournament(32)
