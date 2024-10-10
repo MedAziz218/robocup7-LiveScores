@@ -19,9 +19,18 @@
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
 	import { Textarea } from '$lib/components/ui/textarea/index.js';
 	import * as HoverCard from '$lib/components/ui/hover-card/index.js';
-
 	import { LightSwtich,CsvUploader } from '$lib/components/custom';
 	import { TestFlow } from '$lib/components/flow';
+	import  type { TournamentFlowInteface }  from '$lib/components/flow/test-flow.svelte';
+
+	import { useSvelteFlow, useNodes } from '@xyflow/svelte';
+
+	const { zoomIn, zoomOut, setZoom, fitView, setCenter, setViewport, getViewport, viewport} =
+		useSvelteFlow();
+
+	let TournamentFlow:TournamentFlowInteface;
+
+	// TODO: Add dark mode	
 	// import PlaygroundLight from "$lib/img/examples/playground-light.png?enhanced";
 	// import PlaygroundDark from "$lib/img/examples/playground-dark.png?enhanced";
 </script>
@@ -45,6 +54,7 @@
 				<CodeViewer />
 				<PresetShare />
 			</div> -->
+			<Button on:click={() => TournamentFlow.setTopBracket(8)}>Zoom In</Button>
 			<LightSwtich />
 			<PresetActions />
 		</div>
@@ -137,7 +147,7 @@
 				<div class="md:order-1">
 					<Tabs.Content value="complete" class="mt-0 h-full w-full border-0 p-0">
 						<div class="flex h-full flex-col space-y-4">
-							<TestFlow/>
+							<TestFlow bind:this={TournamentFlow}/>
 						</div>
 					</Tabs.Content>
 					<Tabs.Content value="insert" class="mt-0 h-full w-full border-0 p-0">

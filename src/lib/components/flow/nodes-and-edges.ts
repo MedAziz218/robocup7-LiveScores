@@ -21,7 +21,15 @@ function closestLowerPowerOfTwo(n: number) {
 }
 
 type Team = { id: number; name: string; club?: string };
-type Match = { id: number; winnerGoesTo: number; node: Node; edge: Edge };
+type Match = {
+	id: number;
+	teams: Team[];
+	winnerGoesTo: number;
+	roundNumber: number;
+	index: number;
+	XoffsetModifer: number;
+	YoffsetModifer: number;
+};
 type Round = Match[];
 export type Tournament = Round[];
 const empty_teams: Team[] = [
@@ -32,14 +40,9 @@ const Xoffset = 220;
 const nodeHeight = 50;
 const Yoffset = 10;
 
-export function createNodeFromMatch(
-	matchID: number,
-	teams: Team[],
-	roundNumber: number,
-	index: number,
-	XoffsetModifer = 0,
-	YoffsetModifer = 0
-): Node {
+export function createNodeFromMatch(match: Match): Node {
+	let { id: matchID, teams, roundNumber, index, XoffsetModifer, YoffsetModifer } = match;
+
 	const p = Math.pow(2, roundNumber + YoffsetModifer - 1);
 	let Yoff = (nodeHeight + Yoffset) * p * (index - 1) + ((nodeHeight + Yoffset) * (p - 1)) / 2;
 	let Xoff = Xoffset * (roundNumber + XoffsetModifer);
@@ -48,8 +51,8 @@ export function createNodeFromMatch(
 		data: {
 			match: {
 				id: matchID,
-				teams: empty_teams
-			}
+				teams: teams
+			},
 		},
 		position: { x: Xoff, y: Yoff },
 		type: 'match',
@@ -62,12 +65,13 @@ export function createNodeFromMatch(
 
 	return node;
 }
-function createEdgeFromMatch(matchID: number, matchWinnerGoesTo: number): Edge {
+function createEdgeFromMatch(match: Match): Edge {
+	let { id: matchID, winnerGoesTo: matchWinnerGoesTo } = match;
 	let edge: Edge = {
 		id: `edge-${matchID}-${matchWinnerGoesTo}`,
 		source: matchID.toString(),
 		target: matchWinnerGoesTo.toString(),
-		type: 'smoothstep'
+		type: 'step'
 	};
 	return edge;
 }
@@ -84,16 +88,21 @@ function generateRound(
 		const winnerGoesTo = Math.ceil(i / 2) + start + Math.pow(2, k - roundNumber);
 		let match: Match = {
 			id: matchID,
+			teams: empty_teams,
 			winnerGoesTo: winnerGoesTo,
-			node: createNodeFromMatch(
-				matchID,
-				empty_teams,
-				roundNumber,
-				i,
-				XoffsetModifer,
-				YoffsetModifer
-			),
-			edge: createEdgeFromMatch(matchID, winnerGoesTo)
+			roundNumber: roundNumber,
+			index: i,
+			XoffsetModifer: XoffsetModifer,
+			YoffsetModifer: YoffsetModifer
+			// node: createNodeFromMatch(
+			// 	matchID,
+			// 	empty_teams,
+			// 	roundNumber,
+			// 	i,
+			// 	XoffsetModifer,
+			// 	YoffsetModifer
+			// ),
+			// edge: createEdgeFromMatch(matchID, winnerGoesTo)
 		};
 
 		res.push(match);
@@ -112,9 +121,13 @@ function generateEliminationRoundCase1(
 		const winnerGoesTo = Math.ceil(i) + start + q + (Math.pow(2, k - 1) - q);
 		let match: Match = {
 			id: matchID,
+			teams: empty_teams,
+
 			winnerGoesTo: winnerGoesTo,
-			node: createNodeFromMatch(matchID, empty_teams, roundNumber, i+(Math.pow(2, k - 1) - q), -1),
-			edge: createEdgeFromMatch(matchID, winnerGoesTo)
+			roundNumber: roundNumber,
+			index: i + (Math.pow(2, k - 1) - q),
+			XoffsetModifer: -1,
+			YoffsetModifer: 0
 		};
 
 		res.push(match);
@@ -142,82 +155,47 @@ function generateEliminationRoundCase2(
 	XoffsetModifer = -1,
 	YoffsetModifer = 0
 ): Round {
-
 	// TODO: flip the order of the double and single elimination
 	// TODO: so that all participants wait equally
- 
+
 	let res: Round = [];
-	let b = (q-x)*2
-	for (let i = 1; i <=b ; i++) {
+	let b = (q - x) * 2;
+	for (let i = 1; i <= b; i++) {
 		const matchID = i + start;
 		const winnerGoesTo = Math.ceil(i / 2) + start + q;
 		let match: Match = {
 			id: matchID,
+			teams: empty_teams,
 			winnerGoesTo: winnerGoesTo,
-			node: createNodeFromMatch(
-				matchID,
-				empty_teams,
-				roundNumber,
-				i,
-				XoffsetModifer,
-				YoffsetModifer
-			),
-			edge: createEdgeFromMatch(matchID, winnerGoesTo)
+			roundNumber: roundNumber,
+			index: i,
+			XoffsetModifer: XoffsetModifer,
+			YoffsetModifer: YoffsetModifer
 		};
 
 		res.push(match);
 	}
 
-	for (let i = b+1; i <=q; i++) {
+	for (let i = b + 1; i <= q; i++) {
 		const matchID = i + start;
-		const winnerGoesTo = Math.ceil(i) + q - Math.floor(b/2);
+		const winnerGoesTo = Math.ceil(i) + q - Math.floor(b / 2);
 		let match: Match = {
 			id: matchID,
+			teams: empty_teams,
 			winnerGoesTo: winnerGoesTo,
-			node: createNodeFromMatch(
-				matchID,
-				empty_teams,
-				roundNumber,
-				i+(i-b),
-				XoffsetModifer,
-				YoffsetModifer
-			),
-			edge: createEdgeFromMatch(matchID, winnerGoesTo)
+			roundNumber: roundNumber,
+			index: i + (i - b),
+			XoffsetModifer: XoffsetModifer,
+			YoffsetModifer: YoffsetModifer
 		};
 
 		res.push(match);
 	}
 
 	return res;
-	// let res: Round = [];
-	// for (let i = 1; i <= x; i++) {
-	// 	const matchID = i + start;
-	// 	const winnerGoesTo =  start + q + Math.pow(2, k - 1)-Math.ceil(i/2)+1 ;
-	// 	let match: Match = {
-	// 		id: matchID,
-	// 		winnerGoesTo: winnerGoesTo,
-	// 		node: createNodeFromMatch(matchID,empty_teams, roundNumber, Math.pow(2, k)-Math.ceil(i) +1,-1),
-	// 		edge: createEdgeFromMatch(matchID, winnerGoesTo)
-	// 	};
-
-	// 	res.push(match);
-	// }
-	// for (let i = x+1; i <= q; i++) {
-	// 	const matchID = i + start;
-	// 	const winnerGoesTo =  start + q + Math.pow(2, k - 1)-Math.ceil(i)+1 ;
-	// 	let match: Match = {
-	// 		id: matchID,
-	// 		winnerGoesTo: winnerGoesTo,
-	// 		node: createNodeFromMatch(matchID,empty_teams, roundNumber, Math.pow(2, k)-Math.ceil(i) +1,-1),
-	// 		edge: createEdgeFromMatch(matchID, winnerGoesTo)
-	// 	};
-
-	// 	res.push(match);
-	// }
-	// return res;
 }
 
-export function generateTournament(numberOfTeams: number,start_initial:number =0): Tournament {
+export function generateTournament(numberOfTeams: number, start_initial: number = 0): Tournament {
 	let n = closestLowerPowerOfTwo(numberOfTeams);
 	let k = Math.log2(n);
 	let q = numberOfTeams - n; // number of matches in eliminatory round
@@ -263,8 +241,8 @@ export function getNodesAndEdgesFromTournament(tournament: Tournament): [Node[],
 		const round = tournament[i];
 		for (let j = 0; j < round.length; j++) {
 			const match = round[j];
-			Nodes.push(match.node);
-			Edges.push(match.edge);
+			Nodes.push(createNodeFromMatch(match));
+			Edges.push(createEdgeFromMatch(match));
 		}
 	}
 	return [Nodes, Edges];

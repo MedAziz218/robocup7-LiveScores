@@ -10,7 +10,11 @@
 	export let data: $$Props['data'];
 
 	type matchType = { id: number; teams: { id: number; name: string }[] };
-	let match = data.match as matchType;
+	let match: matchType;
+	$: if (data) {
+		match = data.match as matchType;
+	}
+
 	function handleContextMenuAction(action: string, teamId: number) {
 		console.log(`Action: ${action}, Team ID: ${teamId}`);
 		// Implement your logic here

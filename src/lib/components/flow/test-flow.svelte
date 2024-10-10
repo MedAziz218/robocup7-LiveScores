@@ -1,3 +1,11 @@
+<script context="module" lang="ts">
+	export interface TournamentFlowInteface {
+		initTournament: (numberOfTeams: number) => void;
+		setTopBracket: (bracketSize: 'all' | 64 | 32 | 16 | 8) => void;
+		// getCurrentNumberOfTeams: ()=> number;
+	}
+</script>
+
 <script lang="ts">
 	import { writable } from 'svelte/store';
 	import {
@@ -19,56 +27,72 @@
 	import {
 		generateTournament,
 		getNodesAndEdgesFromTournament,
-		createNodeFromMatch,
 		type Tournament
 	} from './nodes-and-edges';
+	import { useNodes } from '@xyflow/svelte';
+
 	const tournament = writable<Tournament>([]);
 	const nodes = writable<Node[]>([]);
 	const edges = writable<Edge[]>([]);
-	$: if ($tournament) {
-		let [n, e] = getNodesAndEdgesFromTournament($tournament);
-		nodes.set(n);
-		edges.set(e);
+	const teamsList = writable<string[]>([]);
+	const tournamentSize = writable(0);
+
+	let colorMode: ColorMode = 'dark';
+	export function setTeamsList(teamsNamesList: string[]): void {
+		teamsList.set(teamsNamesList);
 	}
-	onMount(() => {
-		// setTimeout(() => {
-		// 	const t1 = localStorage.getItem('t1');
-		// 	if (t1) {
-		// 		tournament.set(JSON.parse(t1));
-		// 	}
-		// }, 500);
-		setTimeout(() => {
-			$tournament = generateTournament(70);
-		}, 500);
+	export function initTournament(numberOfTeams: number): void {
+		$tournament = generateTournament(numberOfTeams);
+		$tournamentSize = numberOfTeams;
+	}
+	export function setTopBracket(bracketSize: 'all' | 64 | 32 | 16 | 8): void {
+		if (bracketSize === 'all') {
+			$tournament = generateTournament($tournamentSize);
+		} else {
+			$tournament = generateTournament(bracketSize, $tournamentSize - bracketSize);
+		}
+		
+	}
 
-		// setTimeout(() => {
-		// 	$tournament = generateTournament(32,70-64)
-		// }, 4000);
-		// setTimeout(() => {
-		// 	$tournament = generateTournament(32)
+	export const saveTournament = (name: string) => {
+		localStorage.setItem(name, JSON.stringify($tournament));
+	};
+	export const loadTournament = (name: string) => {
+		const s = localStorage.getItem(name);
+		let t: Tournament = [];
+		if (s) {
+			t = JSON.parse(s);
+		}
+		return t;
+	};
 
-		// }, 2000);
-	});
 	const nodeTypes = {
 		participant: ParticipantNode,
 		match: MatchNode
 	};
 	const defaultEdgeOptions = {
-		type: 'smoothstep',
+		type: 'step',
 		markerEnd: 'edge-circle'
 	};
 	const snapGrid: [number, number] = [25, 25];
 
-	const fitViewOptions = {
-		padding: 0.1,
-		includeHiddenNodes: false,
-		minZoom: 0.5,
-		maxZoom: 1.5,
-		duration: 1000,
-		nodes: [{ id: '1' }] ,// nodes to fit
+	// const fitViewOptions = {
+	// 	padding: 0.1,
+	// 	includeHiddenNodes: false,
+	// 	minZoom: 0.5,
+	// 	maxZoom: 1.5,
+	// 	duration: 1000,
+	// 	nodes: [{ id: '1' }] // nodes to fit
+	// };
+
+	$: if ($tournament) {
+		let [n, e] = getNodesAndEdgesFromTournament($tournament);
 		
-	};
-	let colorMode: ColorMode = 'dark';
+		$nodes = n;
+		$edges = e;
+
+	}
+
 	$: if ($mode === 'light') {
 		colorMode = 'light';
 	} else if ($mode === 'dark') {
@@ -76,6 +100,22 @@
 	} else {
 		colorMode = 'system';
 	}
+
+	onMount(() => {
+		initTournament(16);
+		setTimeout(() => {
+			$tournament = $tournament.map((round) => {
+				return round.map((match, i) => {
+					match.teams = [
+						{ id: 0, name: 'pp' },
+						{ id: 1, name: 'qq' }
+					];
+					return match;
+				});
+			});
+			console.log('trah jarrab');
+		}, 4000);
+	});
 </script>
 
 <!--
@@ -90,7 +130,6 @@
 		{snapGrid}
 		{nodeTypes}
 		{defaultEdgeOptions}
-		{fitViewOptions}
 		minZoom={0.1}
 		maxZoom={2}
 		fitView
