@@ -14,11 +14,38 @@
 	import '@xyflow/svelte/dist/style.css';
 	import ParticipantNode from './participant-node.svelte';
 	import MatchNode from './match-node.svelte';
-	import { initialNodes, initialEdges } from './nodes-and-edges';
 	import { mode } from 'mode-watcher';
-	const nodes = writable<Node[]>(initialNodes);
-
-	const edges = writable<Edge[]>(initialEdges);
+	import { onMount } from 'svelte';
+	import {
+		generateTournament,
+		getNodesAndEdgesFromTournament,
+		createNodeFromMatch,
+		type Tournament
+	} from './nodes-and-edges';
+	const tournament = writable<Tournament>([]);
+	const nodes = writable<Node[]>([]);
+	const edges = writable<Edge[]>([]);
+	$: if ($tournament) {
+		let [n, e] = getNodesAndEdgesFromTournament($tournament);
+		nodes.set(n);
+		edges.set(e);
+	}
+	onMount(() => {
+		// setTimeout(() => {
+		// 	const t1 = localStorage.getItem('t1');
+		// 	if (t1) {
+		// 		tournament.set(JSON.parse(t1));
+		// 	}
+		// }, 500);
+		setTimeout(() => {
+			$tournament = generateTournament(8)
+		}, 500);
+		setTimeout(() => {
+			$tournament = generateTournament(32)
+			
+			
+		}, 2000);
+	});
 	const nodeTypes = {
 		participant: ParticipantNode,
 		match: MatchNode
@@ -35,7 +62,7 @@
 		minZoom: 0.5,
 		maxZoom: 1.5,
 		duration: 1000,
-		nodes: [{ id: '49' } ] // nodes to fit
+		nodes: [{ id: '49' }] // nodes to fit
 	};
 	let colorMode: ColorMode = 'dark';
 	$: if ($mode === 'light') {
@@ -59,7 +86,7 @@
 		{snapGrid}
 		{nodeTypes}
 		{defaultEdgeOptions}
-        {fitViewOptions}
+		{fitViewOptions}
 		minZoom={0.1}
 		maxZoom={2}
 		fitView
