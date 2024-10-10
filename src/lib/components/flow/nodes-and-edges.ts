@@ -142,6 +142,10 @@ function generateEliminationRoundCase2(
 	XoffsetModifer = -1,
 	YoffsetModifer = 0
 ): Round {
+
+	// TODO: flip the order of the double and single elimination
+	// TODO: so that all participants wait equally
+ 
 	let res: Round = [];
 	let b = (q-x)*2
 	for (let i = 1; i <=b ; i++) {
@@ -183,7 +187,7 @@ function generateEliminationRoundCase2(
 
 		res.push(match);
 	}
-	
+
 	return res;
 	// let res: Round = [];
 	// for (let i = 1; i <= x; i++) {
@@ -213,14 +217,14 @@ function generateEliminationRoundCase2(
 	// return res;
 }
 
-export function generateTournament(numberOfTeams: number): Tournament {
+export function generateTournament(numberOfTeams: number,start_initial:number =0): Tournament {
 	let n = closestLowerPowerOfTwo(numberOfTeams);
 	let k = Math.log2(n);
 	let q = numberOfTeams - n; // number of matches in eliminatory round
 	let totalNumberOfMatches = numberOfTeams - 1;
 	let numberOfRounds = k;
 	let tournament: Tournament = [];
-	let start = 0;
+	let start = start_initial;
 	let m = 0;
 	if (q > 0) {
 		if (q > Math.pow(2, k - 1)) {

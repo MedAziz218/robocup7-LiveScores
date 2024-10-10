@@ -38,8 +38,12 @@
 		// 	}
 		// }, 500);
 		setTimeout(() => {
-			$tournament = generateTournament(15);
+			$tournament = generateTournament(70);
 		}, 500);
+
+		// setTimeout(() => {
+		// 	$tournament = generateTournament(32,70-64)
+		// }, 4000);
 		// setTimeout(() => {
 		// 	$tournament = generateTournament(32)
 
@@ -61,7 +65,8 @@
 		minZoom: 0.5,
 		maxZoom: 1.5,
 		duration: 1000,
-		nodes: [{ id: '49' }] // nodes to fit
+		nodes: [{ id: '1' }] ,// nodes to fit
+		
 	};
 	let colorMode: ColorMode = 'dark';
 	$: if ($mode === 'light') {
