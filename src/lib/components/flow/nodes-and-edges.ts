@@ -35,11 +35,11 @@ function createNodeFromMatch(
 	match: Match,
 	roundNumber: number,
 	index: number,
-	start: number
 ): Node {
+  const p = Math.pow(2, roundNumber - 1);
 	let off =
-		(nodeHeight + Yoffset) * Math.pow(2, roundNumber - 1) * (index - 1) +
-		((nodeHeight + Yoffset) * (Math.pow(2, roundNumber - 1) - 1)) / 2;
+		(nodeHeight + Yoffset) * p * (index - 1) +
+		((nodeHeight + Yoffset) * (p - 1)) / 2;
 
 	let node: Node = {
 		id: match.id.toString(),
@@ -66,7 +66,7 @@ function generateRound(start: number, roundNumber: number, k: number): Round {
 		};
 
 		res.push(match);
-		initialNodes.push(createNodeFromMatch(match, roundNumber, i, start));
+		initialNodes.push(createNodeFromMatch(match, roundNumber, i));
 	}
 	return res;
 }

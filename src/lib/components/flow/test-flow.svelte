@@ -29,6 +29,14 @@
 	};
 	const snapGrid: [number, number] = [25, 25];
 
+	const fitViewOptions = {
+		padding: 0.1,
+		includeHiddenNodes: false,
+		minZoom: 0.5,
+		maxZoom: 1.5,
+		duration: 1000,
+		nodes: [{ id: '49' } ] // nodes to fit
+	};
 	let colorMode: ColorMode = 'dark';
 	$: if ($mode === 'light') {
 		colorMode = 'light';
@@ -50,7 +58,10 @@
 		{colorMode}
 		{snapGrid}
 		{nodeTypes}
-        {defaultEdgeOptions}
+		{defaultEdgeOptions}
+        {fitViewOptions}
+		minZoom={0.1}
+		maxZoom={2}
 		fitView
 		on:nodeclick={(event) => console.log('on node click', event.detail.node)}
 	>
