@@ -30,12 +30,12 @@
 			// Select model if not selected
 			selectedModels = [...selectedModels, model];
 		}
-		dispatch('selectionChange', { selectedIndexes: selectedModels.map((m,i) => i)} )
+		dispatch('selectionChange', { selectedIndexes: selectedModels.map((m,i) => m.id)} )
 
 	}
 	// Updating selected values to display all selected models
 	$: selectedValue = selectedModels.length
-		? selectedModels.map((m, i) => i).join(', ')
+		? selectedModels.map((m,i) => m.id)
 		: 'Select keys...';
 
 	// Close the popover and refocus the trigger button
@@ -102,7 +102,7 @@
 		<Popover.Content class="w-[250px] p-0">
 			<HoverCard.Root
 				closeOnOutsideClick={false}
-				open={hoverCardIsOpen}
+				open={false}
 				openDelay={0}
 				portal={null}
 			>
@@ -126,13 +126,12 @@
 						</div>
 					{/if}
 				</HoverCard.Content> -->
-				<Command.Root loop>
+				<Command.Root >
 					<Command.Input placeholder="Search Models...." />
-					<Command.List class="h-[var(--cmdk-list-height)] max-h-[400px]">
+					<Command.List class="h-[var(--cmdk-list-height)] max-h-[300px]">
 						<Command.Empty>No models found.</Command.Empty>
-						{#each types as type}
-							<Command.Group heading={type}>
-								{#each models.filter((model) => model.type === type) as model}
+							<Command.Group>
+								{#each models as model}
 									<HoverCard.Trigger asChild let:builder>
 										<div use:builder.action {...builder} role="button" tabindex={0}>
 											<ModelItem
@@ -142,7 +141,7 @@
 													closeAndFocusTrigger(ids.trigger);
 												}}
 												onPeek={() => {
-													handlePeek(model);
+													// handlePeek(model);
 												}}
 												isSelected={selectedModels.some((m) => m.id === model.id)}
 											/>
@@ -150,7 +149,6 @@
 									</HoverCard.Trigger>
 								{/each}
 							</Command.Group>
-						{/each}
 					</Command.List>
 				</Command.Root>
 			</HoverCard.Root>

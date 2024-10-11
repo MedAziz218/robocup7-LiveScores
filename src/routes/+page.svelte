@@ -13,28 +13,22 @@
 		TemperatureSelector,
 		TopPSelector
 	} from '$lib/(components)/index.js';
-	import { models, types } from '$lib/(data)/models.js';
-	import { presets } from '$lib/(data)/presets.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Separator } from '$lib/components/ui/separator/index.js';
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
 	import { Textarea } from '$lib/components/ui/textarea/index.js';
 	import * as HoverCard from '$lib/components/ui/hover-card/index.js';
-	import { LightSwtich, CsvUploader, MultipleSelect } from '$lib/components/custom';
+	import { LightSwtich, CsvUploader } from '$lib/components/custom';
 	import { TestFlow } from '$lib/components/flow';
 	import type { TournamentFlowInteface } from '$lib/components/flow/test-flow.svelte';
 	import { useSvelteFlow, useNodes } from '@xyflow/svelte';
-	let options =  [
-    { value: 'apple', label: 'Apple' },
-    { value: 'banana', label: 'Banana' },
-    { value: 'cherry', label: 'Cherry' },
-    { value: 'date', label: 'Date' },
-    { value: 'elderberry', label: 'Elderberry' },
-  ]
+	import { createModelList, type Model } from '$lib/(data)/models';
 	const { zoomIn, zoomOut, setZoom, fitView, setCenter, setViewport, getViewport, viewport } =
 		useSvelteFlow();
+	let models: Model[] = [];
 
+	$: types = ['key'];
 	let TournamentFlow: TournamentFlowInteface;
 	let uploadButtonDisabled = false;
 	function readFile(file: File): Promise<string> {
@@ -64,22 +58,22 @@
 		// Extract keys (headers)
 		const keys = lines[0];
 		// Map each row to an object using the headers as keys
-		return (
-			lines
-				// .slice(1)
-				.map((arr) => {
-					let compteur = 0;
+		return lines.map((arr) => {
+			return arr.filter((val, i) => val || keys[i]);
+		});
+		// .slice(1)
+		// .map((arr) => {
+		// 	let compteur = 0;
 
-					return arr.reduce((obj, val, i) => {
-						if (val || keys[i]) {
-							//@ts-ignore
-							obj[compteur] = val;
-							compteur++;
-						}
-						return obj;
-					}, {});
-				})
-		);
+		// 	return arr.reduce((obj, val, i) => {
+		// 		if (val || keys[i]) {
+		// 			//@ts-ignore
+		// 			obj[compteur] = val;
+		// 			compteur++;
+		// 		}
+		// 		return obj;
+		// 	}, {});
+		// })
 	}
 </script>
 
@@ -107,6 +101,10 @@
 							.then((data) => {
 								const processedData = processCsv(data);
 								console.log('processedData', processedData);
+								// console.log(processedData[0]);
+
+								models = createModelList(processedData[0], 'key');
+								console.log('models', models);
 								// TournamentFlow.importTournament();
 								// TournamentFlow.setTopBracket('all');
 							})
@@ -209,9 +207,13 @@
 						</Tabs.List>
 					</div>
 					<!-- <MultipleSelect {options}/> -->
-					<ModelSelector {types} {models} on:selectionChange={(e)=>{
-						console.log( e.detail.selectedIndexes)
-					}} />
+					<ModelSelector
+						{types}
+						bind:models
+						on:selectionChange={(e) => {
+							console.log(e.detail.selectedIndexes);
+						}}
+					/>
 					<TemperatureSelector value={[0.56]} />
 					<MaxLengthSelector value={[256]} />
 					<TopPSelector value={[0.9]} />
