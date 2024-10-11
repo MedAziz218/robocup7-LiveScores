@@ -140,7 +140,7 @@
 												{model}
 												onSelect={() => {
 													toggleModelSelection(model);
-													closeAndFocusTrigger(ids.trigger);
+													// closeAndFocusTrigger(ids.trigger);
 												}}
 												onPeek={() => {
 													// handlePeek(model);

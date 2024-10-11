@@ -6,24 +6,29 @@
 
 	let dialogOpen = false;
 	export let textareaContent = '';
-
+    export let title = '';
+    export let description = '';
 	const dispatch = createEventDispatcher();
 
 	function handleConfirm() {
 		dispatch('confirm', textareaContent);
 		dialogOpen = false;
+        tempOnConfirm();
 	}
-
-	export function openDialog() {
+    let tempOnConfirm = () => {};
+	export function openDialog(onConfirm: () => void) {
+        if (dialogOpen)return;
+        tempOnConfirm = onConfirm;
 		dialogOpen = true;
 	}
+    $: if (!dialogOpen) tempOnConfirm = () => {};
 </script>
 
 <Dialog.Root bind:open={dialogOpen}>
 	<Dialog.Content class="sm:max-w-[50%]">
 		<Dialog.Header>
-			<Dialog.Title>Enter Text</Dialog.Title>
-			<Dialog.Description>Please enter your text in the textarea below.</Dialog.Description>
+			<Dialog.Title>{title}</Dialog.Title>
+			<Dialog.Description>{description}</Dialog.Description>
 		</Dialog.Header>
 		<div class="grid gap-4 py-4">
 			<Textarea

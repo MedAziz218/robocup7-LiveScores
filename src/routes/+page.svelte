@@ -25,6 +25,7 @@
 	import { useSvelteFlow, useNodes } from '@xyflow/svelte';
 	import { createModelList, type Model } from '$lib/(data)/models';
 	import { DialogTextArea } from '$lib/components/custom';
+	import { onMount } from 'svelte';
 	const { zoomIn, zoomOut, setZoom, fitView, setCenter, setViewport, getViewport, viewport } =
 		useSvelteFlow();
 	let models: Model[] = [];
@@ -66,23 +67,33 @@
 		});
 	}
 	let dialogComponent: DialogTextArea;
-
-	function openTheDialog() {
-		dialogComponent.openDialog();
+	function applyTeams() {
+		TournamentFlow.setTopBracket(8);
+	}
+	function openTheDialog(onConfirm: () => void = () => {}) {
+		dialogComponent.openDialog(onConfirm);
 	}
 	function handleConfirm(event: CustomEvent<string>) {
 		console.log('Confirmed text:', event.detail);
+		localStorage.setItem('teamsDataString', teamsDataString);
 		// Handle the confirmed text here
 	}
 	function generateTeams() {
 		if (!loadedCsvData || !usefulCsvKeyIndexes) {
 			return;
 		}
+		teamsDataString = '';
 		for (let i = 1; i < loadedCsvData.length; i++) {
 			const entry = loadedCsvData[i];
 			for (let j = 0; j < usefulCsvKeyIndexes.length; j++) {
-				if (!entry[usefulCsvKeyIndexes[j]].trim()) continue;
-				teamsDataString += entry[usefulCsvKeyIndexes[j]].trim();
+				if (entry[usefulCsvKeyIndexes[j]]) {
+					teamsDataString += entry[usefulCsvKeyIndexes[j]].trim();
+
+				}else {
+					teamsDataString += '-';
+				}
+				
+
 				if (j < usefulCsvKeyIndexes.length - 1) {
 					teamsDataString += ' | ';
 				}
@@ -91,6 +102,15 @@
 		}
 		openTheDialog();
 	}
+	onMount(() => {
+		const savedData = localStorage.getItem('teamsDataString');
+		if (savedData) {
+			teamsDataString = savedData; // Load saved data if it exists
+		}
+	});
+
+	// Save to localStorage whenever teamsDataString changes
+	
 </script>
 
 <div class="md:hidden">
@@ -102,6 +122,7 @@
 		bind:this={dialogComponent}
 		on:confirm={handleConfirm}
 		bind:textareaContent={teamsDataString}
+		title="Teams"
 	/>
 	<div
 		class="container flex flex-col items-start justify-between space-y-2 py-4 sm:flex-row sm:items-center sm:space-y-0 md:h-16"
@@ -229,7 +250,13 @@
 							console.log(e.detail.selectedIndexes);
 						}}
 					/>
-					<Button on:click={() => generateTeams()}>Generate teams</Button>
+					<Button
+						on:click={generateTeams}
+						disabled={!usefulCsvKeyIndexes?.length || !loadedCsvData}
+						variant="outline">Generate teams</Button
+					>
+					<Button on:click={() => openTheDialog()} variant="secondary">Edit Teams</Button>
+					<Button on:click={() => openTheDialog(applyTeams)} variant="default">Apply Teams</Button>
 
 					<!-- <TemperatureSelector value={[0.56]} />
 					<MaxLengthSelector value={[256]} />
