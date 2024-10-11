@@ -2,6 +2,7 @@
 	export interface TournamentFlowInteface {
 		initTournament: (numberOfTeams: number) => void;
 		setTopBracket: (bracketSize: 'all' | 64 | 32 | 16 | 8) => void;
+		applyTeams: (teams: string[]) => void;
 		// importTournament: (tournament: Tournament) => void;
 		// getCurrentNumberOfTeams: ()=> number;
 	}
@@ -15,6 +16,7 @@
 		Background,
 		BackgroundVariant,
 		MiniMap,
+		useSvelteFlow,
 		type ColorMode,
 		type NodeTypes,
 		type Node,
@@ -28,9 +30,10 @@
 	import {
 		generateTournament,
 		getNodesAndEdgesFromTournament,
+		updateTournamentTeams,
 		type Tournament
 	} from './nodes-and-edges';
-
+	const { updateNodeData } = useSvelteFlow();
 	const tournament = writable<Tournament>([]);
 	const nodes = writable<Node[]>([]);
 	const edges = writable<Edge[]>([]);
@@ -51,6 +54,13 @@
 		} else {
 			$tournament = generateTournament(bracketSize, $tournamentSize - bracketSize);
 		}
+	}
+	export function applyTeams(teams: string[]): void {
+		if ($tournamentSize !== teams.length) {
+			initTournament(teams.length);
+		}
+		$tournament = updateTournamentTeams($tournament, teams);
+
 	}
 
 	export const saveTournament = (name: string) => {
@@ -101,18 +111,18 @@
 
 	onMount(() => {
 		initTournament(16);
-		setTimeout(() => {
-			$tournament = $tournament.map((round) => {
-				return round.map((match, i) => {
-					match.teams = [
-						{ id: 0, name: 'pp' },
-						{ id: 1, name: 'qq' }
-					];
-					return match;
-				});
-			});
-			console.log('trah jarrab');
-		}, 4000);
+		// setTimeout(() => {
+		// 	$tournament = $tournament.map((round) => {
+		// 		return round.map((match, i) => {
+		// 			match.teams = [
+		// 				{ id: 0, name: 'pp' },
+		// 				{ id: 1, name: 'qq' }
+		// 			];
+		// 			return match;
+		// 		});
+		// 	});
+		// 	console.log('trah jarrab');
+		// }, 4000);
 	});
 </script>
 

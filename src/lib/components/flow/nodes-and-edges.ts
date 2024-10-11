@@ -29,6 +29,7 @@ type Match = {
 	index: number;
 	XoffsetModifer: number;
 	YoffsetModifer: number;
+	initialSpots?: number;
 };
 type Round = Match[];
 export type Tournament = Round[];
@@ -52,7 +53,7 @@ export function createNodeFromMatch(match: Match): Node {
 			match: {
 				id: matchID,
 				teams: teams
-			},
+			}
 		},
 		position: { x: Xoff, y: Yoff },
 		type: 'match',
@@ -122,7 +123,7 @@ function generateEliminationRoundCase1(
 		let match: Match = {
 			id: matchID,
 			teams: empty_teams,
-
+			initialSpots: 2,
 			winnerGoesTo: winnerGoesTo,
 			roundNumber: roundNumber,
 			index: i + (Math.pow(2, k - 1) - q),
@@ -166,6 +167,7 @@ function generateEliminationRoundCase2(
 		let match: Match = {
 			id: matchID,
 			teams: empty_teams,
+			initialSpots: 2,
 			winnerGoesTo: winnerGoesTo,
 			roundNumber: roundNumber,
 			index: i,
@@ -182,6 +184,7 @@ function generateEliminationRoundCase2(
 		let match: Match = {
 			id: matchID,
 			teams: empty_teams,
+			initialSpots: 2,
 			winnerGoesTo: winnerGoesTo,
 			roundNumber: roundNumber,
 			index: i + (i - b),
@@ -203,7 +206,7 @@ export function generateTournament(numberOfTeams: number, start_initial: number 
 	let numberOfRounds = k;
 	let tournament: Tournament = [];
 	let start = start_initial;
-	let m = 0;
+
 	if (q > 0) {
 		if (q > Math.pow(2, k - 1)) {
 			let x = Math.pow(2, k - 1);
@@ -231,9 +234,57 @@ export function generateTournament(numberOfTeams: number, start_initial: number 
 		}
 	}
 
+	// -- set the initialSpots
+	if (q > 0) {
+		// if there is elimination round
+	}
+	let eliminationRound = tournament[0];
+	let firstRound = tournament[1];
+	let firstRoundSpots: { [key: number]: number } = {};
+	for (let j = 0; j < eliminationRound.length; j++) {
+		const match = eliminationRound[j];
+		match.initialSpots = 2;
+		eliminationRound[j] = match;
+		if (match.winnerGoesTo in firstRoundSpots) {
+			firstRoundSpots[match.winnerGoesTo] -= 1;
+		} else {
+			firstRoundSpots[match.winnerGoesTo] = 1;
+		}
+	}
+	for (let i = 0; i < firstRound.length; i++) {
+		if (firstRound[i].id in firstRoundSpots) {
+			firstRound[i].initialSpots = firstRoundSpots[firstRound[i].id];
+		}else {
+			firstRound[i].initialSpots = 2;
+		}
+	}
+	tournament[0] = firstRound;
+	tournament[1] = eliminationRound;
+
 	return tournament;
 }
-
+export function updateTournamentTeams(tournament: Tournament, teamNames: string[]): Tournament {
+	let x_id = 0;
+	for (let i = 1; i >=0; i--) {
+		const round = tournament[i];
+		for (let j = 0; j < round.length; j++) {
+			const match = round[j];
+			if (!match.initialSpots) continue;
+			if (match.initialSpots === 2) {
+				match.teams = [
+					{ id: x_id, name: teamNames[x_id] },
+					{ id: x_id + 1, name: teamNames[x_id + 1] }
+				];
+				x_id += 2;
+			}
+			if (match.initialSpots === 1) {
+				match.teams = [empty_teams[0], { id: x_id, name: teamNames[x_id] }];
+				x_id += 1;
+			}
+		}
+	}
+	return tournament;
+}
 export function getNodesAndEdgesFromTournament(tournament: Tournament): [Node[], Edge[]] {
 	const Nodes: Node[] = [];
 	const Edges: Edge[] = [];

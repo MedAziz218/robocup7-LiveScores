@@ -68,7 +68,7 @@
 	}
 	let dialogComponent: DialogTextArea;
 	function applyTeams() {
-		TournamentFlow.setTopBracket(8);
+		TournamentFlow.applyTeams(teamsDataString.split('\n'));
 	}
 	function openTheDialog(onConfirm: () => void = () => {}) {
 		dialogComponent.openDialog(onConfirm);
