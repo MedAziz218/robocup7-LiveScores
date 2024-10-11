@@ -14,7 +14,8 @@
 	};
 	const dispatch = createEventDispatcher<{selectionChange:ModelSelectEvent}>();
 
-	export let types: ModelType[];
+	// export let types: ModelType[];
+	export let selectedIndexes: number[];
 	export let models: Model[];
 	let selectedModels: Model[] = [];
 	let peekedModel: Model | undefined = undefined;
@@ -30,7 +31,8 @@
 			// Select model if not selected
 			selectedModels = [...selectedModels, model];
 		}
-		dispatch('selectionChange', { selectedIndexes: selectedModels.map((m,i) => m.id)} )
+		selectedIndexes = selectedModels.map((m,i) => m.id);
+		dispatch('selectionChange', { selectedIndexes} )
 
 	}
 	// Updating selected values to display all selected models

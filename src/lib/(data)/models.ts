@@ -5,7 +5,7 @@ export const types = ["key"];
 export type ModelType = (typeof types)[number];
 export function createModelList(strings: string[],type:string): Model[] {
 	return strings.map((str, index) => ({
-		id: (index + 1),  // id is the order in the list
+		id: (index),  // id is the order in the list
 		name: (index + 1).toString()+'-'+str.trim(),
 		type: type  // Default type is 'string'
 	}));

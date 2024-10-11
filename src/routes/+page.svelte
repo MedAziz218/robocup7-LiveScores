@@ -24,11 +24,14 @@
 	import type { TournamentFlowInteface } from '$lib/components/flow/test-flow.svelte';
 	import { useSvelteFlow, useNodes } from '@xyflow/svelte';
 	import { createModelList, type Model } from '$lib/(data)/models';
+	import { DialogTextArea } from '$lib/components/custom';
 	const { zoomIn, zoomOut, setZoom, fitView, setCenter, setViewport, getViewport, viewport } =
 		useSvelteFlow();
 	let models: Model[] = [];
+	let usefulCsvKeyIndexes: number[];
+	let loadedCsvData: string[][];
+	let teamsDataString = '';
 
-	$: types = ['key'];
 	let TournamentFlow: TournamentFlowInteface;
 	let uploadButtonDisabled = false;
 	function readFile(file: File): Promise<string> {
@@ -61,19 +64,32 @@
 		return lines.map((arr) => {
 			return arr.filter((val, i) => val || keys[i]);
 		});
-		// .slice(1)
-		// .map((arr) => {
-		// 	let compteur = 0;
+	}
+	let dialogComponent: DialogTextArea;
 
-		// 	return arr.reduce((obj, val, i) => {
-		// 		if (val || keys[i]) {
-		// 			//@ts-ignore
-		// 			obj[compteur] = val;
-		// 			compteur++;
-		// 		}
-		// 		return obj;
-		// 	}, {});
-		// })
+	function openTheDialog() {
+		dialogComponent.openDialog();
+	}
+	function handleConfirm(event: CustomEvent<string>) {
+		console.log('Confirmed text:', event.detail);
+		// Handle the confirmed text here
+	}
+	function generateTeams() {
+		if (!loadedCsvData || !usefulCsvKeyIndexes) {
+			return;
+		}
+		for (let i = 1; i < loadedCsvData.length; i++) {
+			const entry = loadedCsvData[i];
+			for (let j = 0; j < usefulCsvKeyIndexes.length; j++) {
+				if (!entry[usefulCsvKeyIndexes[j]].trim()) continue;
+				teamsDataString += entry[usefulCsvKeyIndexes[j]].trim();
+				if (j < usefulCsvKeyIndexes.length - 1) {
+					teamsDataString += ' | ';
+				}
+			}
+			teamsDataString += '\n';
+		}
+		openTheDialog();
 	}
 </script>
 
@@ -82,6 +98,11 @@
 	<enhanced:img src={PlaygroundDark} alt="Playground" class="hidden dark:block" /> -->
 </div>
 <div class="flex h-screen flex-col">
+	<DialogTextArea
+		bind:this={dialogComponent}
+		on:confirm={handleConfirm}
+		bind:textareaContent={teamsDataString}
+	/>
 	<div
 		class="container flex flex-col items-start justify-between space-y-2 py-4 sm:flex-row sm:items-center sm:space-y-0 md:h-16"
 	>
@@ -94,19 +115,13 @@
 			<CsvUploader
 				bind:disabled={uploadButtonDisabled}
 				on:confirm={async (e) => {
-					console.log('pppp');
 					if (e.detail.selectedFile) {
 						uploadButtonDisabled = true;
 						readFile(e.detail.selectedFile)
 							.then((data) => {
 								const processedData = processCsv(data);
-								console.log('processedData', processedData);
-								// console.log(processedData[0]);
-
 								models = createModelList(processedData[0], 'key');
-								console.log('models', models);
-								// TournamentFlow.importTournament();
-								// TournamentFlow.setTopBracket('all');
+								loadedCsvData = processedData;
 							})
 							.catch(() => {
 								uploadButtonDisabled = false;
@@ -121,7 +136,7 @@
 				<CodeViewer />
 				<PresetShare />
 			</div> -->
-			<Button on:click={() => TournamentFlow.setTopBracket(8)}>Zoom In</Button>
+			<Button on:click={() => openTheDialog()}>test</Button>
 			<LightSwtich />
 			<PresetActions />
 		</div>
@@ -208,15 +223,17 @@
 					</div>
 					<!-- <MultipleSelect {options}/> -->
 					<ModelSelector
-						{types}
 						bind:models
+						bind:selectedIndexes={usefulCsvKeyIndexes}
 						on:selectionChange={(e) => {
 							console.log(e.detail.selectedIndexes);
 						}}
 					/>
-					<TemperatureSelector value={[0.56]} />
+					<Button on:click={() => generateTeams()}>Generate teams</Button>
+
+					<!-- <TemperatureSelector value={[0.56]} />
 					<MaxLengthSelector value={[256]} />
-					<TopPSelector value={[0.9]} />
+					<TopPSelector value={[0.9]} /> -->
 				</div>
 				<div class="md:order-1">
 					<Tabs.Content value="complete" class="mt-0 h-full w-full border-0 p-0">
