@@ -1,5 +1,5 @@
 // export const types = ["GPT-3", "Codex"];
-export const types = ["track"];
+export const types = ["Track"];
 
 
 export type ModelType = (typeof types)[number];

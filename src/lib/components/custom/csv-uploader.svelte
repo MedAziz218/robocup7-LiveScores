@@ -11,8 +11,13 @@
 	} from '$lib/components/ui/dialog';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
-	import { Upload } from 'lucide-svelte';
-
+	import { Upload ,Loader2} from 'lucide-svelte';
+	import { createEventDispatcher } from 'svelte';
+	type FileSelectEvent = {
+		selectedFile: File | null;
+	};
+	const dispatch = createEventDispatcher<{confirm:FileSelectEvent}>();
+	export let disabled = false;
 	let dialogOpen = false;
 	let dragActive = false;
 	let selectedFile: File | null = null;
@@ -45,6 +50,7 @@
 	function handleConfirm() {
 		// Placeholder function for confirming the upload
 		console.log('Confirm clicked, file:', selectedFile);
+		dispatch('confirm', { selectedFile: selectedFile });
 		dialogOpen = false;
 	}
 
@@ -58,8 +64,14 @@
 
 <Dialog bind:open={dialogOpen}>
 	<DialogTrigger asChild let:builder>
-		<Button builders={[builder]} variant="secondary">
+		<Button builders={[builder]} variant="secondary" disabled={disabled}>
+
+			{#if disabled}
+			<Loader2 class="mr-2 h-4 w-4 animate-spin " />
+			{:else}
 			<Upload class="mr-2 h-4 w-4" />
+			{/if}
+			
 			Upload CSV
 		</Button>
 	</DialogTrigger>
@@ -99,7 +111,7 @@
 		</div>
 		<DialogFooter>
 			<Button on:click={handleConfirm}>Confirm</Button>
-			<Button variant="outline" on:click={handleCancel}>Cancel</Button>
+			<Button variant="outline" on:click={handleCancel} >Cancel</Button>
 		</DialogFooter>
 	</DialogContent>
 </Dialog>

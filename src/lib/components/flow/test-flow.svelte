@@ -2,6 +2,7 @@
 	export interface TournamentFlowInteface {
 		initTournament: (numberOfTeams: number) => void;
 		setTopBracket: (bracketSize: 'all' | 64 | 32 | 16 | 8) => void;
+		// importTournament: (tournament: Tournament) => void;
 		// getCurrentNumberOfTeams: ()=> number;
 	}
 </script>
@@ -50,7 +51,6 @@
 		} else {
 			$tournament = generateTournament(bracketSize, $tournamentSize - bracketSize);
 		}
-		
 	}
 
 	export const saveTournament = (name: string) => {
@@ -86,10 +86,9 @@
 
 	$: if ($tournament) {
 		let [n, e] = getNodesAndEdgesFromTournament($tournament);
-		
+
 		$nodes = n;
 		$edges = e;
-
 	}
 
 	$: if ($mode === 'light') {
@@ -134,7 +133,10 @@
 		fitView
 		on:nodeclick={(event) => console.log('on node click', event.detail.node)}
 	>
-		<Controls />
+		<Controls
+			style="transition-duration:300ms;"
+			class="opacity-0 transition-opacity hover:opacity-60"
+		/>
 		<Background variant={BackgroundVariant.Dots} />
 		<MiniMap
 			style="transition-duration:300ms;"

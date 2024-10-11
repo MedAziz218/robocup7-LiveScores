@@ -1,28 +1,44 @@
 <script lang="ts">
-	import CaretSort from "svelte-radix/CaretSort.svelte";
-	import { tick } from "svelte";
-	import type { Model, ModelType } from "../(data)/models.js";
-	import ModelItem from "./model-item.svelte";
-	import * as HoverCard from "$lib/components/ui/hover-card/index.js";
-	import { Label } from "$lib/components/ui/label/index.js";
-	import { Button } from "$lib/components/ui/button/index.js";
-	import * as Command from "$lib/components/ui/command/index.js";
-	import * as Popover from "$lib/components/ui/popover/index.js";
+	import CaretSort from 'svelte-radix/CaretSort.svelte';
+	import { tick } from 'svelte';
+	import type { Model, ModelType } from '../(data)/models.js';
+	import ModelItem from './model-item.svelte';
+	import * as HoverCard from '$lib/components/ui/hover-card/index.js';
+	import { Label } from '$lib/components/ui/label/index.js';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import * as Command from '$lib/components/ui/command/index.js';
+	import * as Popover from '$lib/components/ui/popover/index.js';
+	import { createEventDispatcher } from 'svelte';
+	type ModelSelectEvent = {
+		selectedIndexes: number[] ;
+	};
+	const dispatch = createEventDispatcher<{selectionChange:ModelSelectEvent}>();
 
 	export let types: ModelType[];
 	export let models: Model[];
-
-	let selectedModel = models[0];
+	let selectedModels: Model[] = [];
 	let peekedModel: Model | undefined = undefined;
 	let open = false;
 
-	let value = "";
+	// Modify `toggleModelSelection` to dispatch an event
+	function toggleModelSelection(model: Model) {
+		const index = selectedModels.findIndex((m) => m.id === model.id);
+		if (index > -1) {
+			// Deselect model if already selected
+			selectedModels = selectedModels.filter((m) => m.id !== model.id);
+		} else {
+			// Select model if not selected
+			selectedModels = [...selectedModels, model];
+		}
+		dispatch('selectionChange', { selectedIndexes: selectedModels.map((m,i) => i)} )
 
-	$: selectedValue = models.find((f) => f.id === value)?.name ?? "Select a model...";
+	}
+	// Updating selected values to display all selected models
+	$: selectedValue = selectedModels.length
+		? selectedModels.map((m, i) => i).join(', ')
+		: 'Select keys...';
 
-	// We want to refocus the trigger button when the user selects
-	// an item from the list so users can continue navigating the
-	// rest of the form with the keyboard.
+	// Close the popover and refocus the trigger button
 	function closeAndFocusTrigger(triggerId: string) {
 		open = false;
 		tick().then(() => {
@@ -32,7 +48,7 @@
 
 	function onPopoverOpenChange(open: boolean) {
 		if (open) {
-			peekedModel = selectedModel;
+			peekedModel = undefined;
 		} else {
 			peekedModel = undefined;
 		}
@@ -52,19 +68,17 @@
 	function onPopoverOutsideClick() {
 		peekedModel = undefined;
 	}
+
+
 </script>
 
 <div class="grid gap-2">
 	<HoverCard.Root openDelay={200}>
 		<HoverCard.Trigger asChild let:builder>
 			<div use:builder.action {...builder}>
-				<Label for="model">Model</Label>
+				<Label for="model">Keys</Label>
 			</div>
 		</HoverCard.Trigger>
-		<HoverCard.Content class="w-[260px] text-sm" align="start" side="left">
-			The model which will generate the completion. Some models are suitable for natural
-			language tasks, others specialize in code. Learn more.
-		</HoverCard.Content>
 	</HoverCard.Root>
 
 	<Popover.Root
@@ -92,7 +106,7 @@
 				openDelay={0}
 				portal={null}
 			>
-				<HoverCard.Content class="-ml-2 min-h-[280px]" side="left" align="start">
+				<!-- <HoverCard.Content class="-ml-2 min-h-[280px]" side="left" align="start">
 					{#if peekedModel && hoverCardIsOpen}
 						<div class="grid gap-2">
 							<h4 class="font-medium leading-none">
@@ -111,7 +125,7 @@
 							{/if}
 						</div>
 					{/if}
-				</HoverCard.Content>
+				</HoverCard.Content> -->
 				<Command.Root loop>
 					<Command.Input placeholder="Search Models...." />
 					<Command.List class="h-[var(--cmdk-list-height)] max-h-[400px]">
@@ -120,22 +134,17 @@
 							<Command.Group heading={type}>
 								{#each models.filter((model) => model.type === type) as model}
 									<HoverCard.Trigger asChild let:builder>
-										<div
-											use:builder.action
-											{...builder}
-											role="button"
-											tabindex={0}
-										>
+										<div use:builder.action {...builder} role="button" tabindex={0}>
 											<ModelItem
 												{model}
 												onSelect={() => {
-													value = model.id;
+													toggleModelSelection(model);
 													closeAndFocusTrigger(ids.trigger);
 												}}
 												onPeek={() => {
 													handlePeek(model);
 												}}
-												isSelected={value === model.id}
+												isSelected={selectedModels.some((m) => m.id === model.id)}
 											/>
 										</div>
 									</HoverCard.Trigger>

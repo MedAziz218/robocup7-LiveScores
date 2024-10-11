@@ -5,7 +5,9 @@
 		MaxLengthSelector,
 		ModelSelector,
 		PresetActions,
-		PresetSave,PresetNew,PresetLoad,
+		PresetSave,
+		PresetNew,
+		PresetLoad,
 		PresetSelector,
 		PresetShare,
 		TemperatureSelector,
@@ -19,27 +21,73 @@
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
 	import { Textarea } from '$lib/components/ui/textarea/index.js';
 	import * as HoverCard from '$lib/components/ui/hover-card/index.js';
-	import { LightSwtich,CsvUploader } from '$lib/components/custom';
+	import { LightSwtich, CsvUploader, MultipleSelect } from '$lib/components/custom';
 	import { TestFlow } from '$lib/components/flow';
-	import  type { TournamentFlowInteface }  from '$lib/components/flow/test-flow.svelte';
-
+	import type { TournamentFlowInteface } from '$lib/components/flow/test-flow.svelte';
 	import { useSvelteFlow, useNodes } from '@xyflow/svelte';
-
-	const { zoomIn, zoomOut, setZoom, fitView, setCenter, setViewport, getViewport, viewport} =
+	let options =  [
+    { value: 'apple', label: 'Apple' },
+    { value: 'banana', label: 'Banana' },
+    { value: 'cherry', label: 'Cherry' },
+    { value: 'date', label: 'Date' },
+    { value: 'elderberry', label: 'Elderberry' },
+  ]
+	const { zoomIn, zoomOut, setZoom, fitView, setCenter, setViewport, getViewport, viewport } =
 		useSvelteFlow();
 
-	let TournamentFlow:TournamentFlowInteface;
+	let TournamentFlow: TournamentFlowInteface;
+	let uploadButtonDisabled = false;
+	function readFile(file: File): Promise<string> {
+		return new Promise((resolve, reject) => {
+			const reader = new FileReader();
 
-	// TODO: Add dark mode	
-	// import PlaygroundLight from "$lib/img/examples/playground-light.png?enhanced";
-	// import PlaygroundDark from "$lib/img/examples/playground-dark.png?enhanced";
+			reader.onload = () => {
+				// Resolve the promise with the file content
+				resolve(reader.result as string);
+			};
+
+			reader.onerror = () => {
+				// Reject the promise in case of an error
+				reject(reader.error);
+			};
+
+			// Read the file as text
+			reader.readAsText(file);
+		});
+	}
+	function processCsv(dataString: string) {
+		const regex = /("[^"]+"|[^,]+)*,/g;
+
+		// Split the CSV string into lines
+		const lines = dataString.split(/\n/).map((lineStr) => lineStr.split(regex));
+
+		// Extract keys (headers)
+		const keys = lines[0];
+		// Map each row to an object using the headers as keys
+		return (
+			lines
+				// .slice(1)
+				.map((arr) => {
+					let compteur = 0;
+
+					return arr.reduce((obj, val, i) => {
+						if (val || keys[i]) {
+							//@ts-ignore
+							obj[compteur] = val;
+							compteur++;
+						}
+						return obj;
+					}, {});
+				})
+		);
+	}
 </script>
 
 <div class="md:hidden">
 	<!-- <enhanced:img src={PlaygroundLight} alt="Playground" class="block dark:hidden" />
 	<enhanced:img src={PlaygroundDark} alt="Playground" class="hidden dark:block" /> -->
 </div>
-<div class="flex h-screen flex-col ">
+<div class="flex h-screen flex-col">
 	<div
 		class="container flex flex-col items-start justify-between space-y-2 py-4 sm:flex-row sm:items-center sm:space-y-0 md:h-16"
 	>
@@ -49,7 +97,28 @@
 			<!-- <PresetNew/> -->
 			<!-- <PresetLoad/> -->
 			<!-- <PresetSave/> -->
-			<CsvUploader/>
+			<CsvUploader
+				bind:disabled={uploadButtonDisabled}
+				on:confirm={async (e) => {
+					console.log('pppp');
+					if (e.detail.selectedFile) {
+						uploadButtonDisabled = true;
+						readFile(e.detail.selectedFile)
+							.then((data) => {
+								const processedData = processCsv(data);
+								console.log('processedData', processedData);
+								// TournamentFlow.importTournament();
+								// TournamentFlow.setTopBracket('all');
+							})
+							.catch(() => {
+								uploadButtonDisabled = false;
+							})
+							.finally(() => {
+								uploadButtonDisabled = false;
+							});
+					}
+				}}
+			/>
 			<!-- <div class="hidden space-x-2 md:flex">
 				<CodeViewer />
 				<PresetShare />
@@ -63,7 +132,7 @@
 	<Tabs.Root value="complete" class="flex-1">
 		<div class="container h-full py-6">
 			<div class="grid h-full items-stretch gap-6 md:grid-cols-[1fr_200px]">
-				<div class="hidden flex-col space-y-4 sm:flex order-1 md:order-2">
+				<div class="order-1 hidden flex-col space-y-4 sm:flex md:order-2">
 					<div class="grid gap-2">
 						<HoverCard.Root openDelay={200}>
 							<HoverCard.Trigger asChild let:builder>
@@ -139,7 +208,10 @@
 							</Tabs.Trigger>
 						</Tabs.List>
 					</div>
-					<ModelSelector {types} {models} />
+					<!-- <MultipleSelect {options}/> -->
+					<ModelSelector {types} {models} on:selectionChange={(e)=>{
+						console.log( e.detail.selectedIndexes)
+					}} />
 					<TemperatureSelector value={[0.56]} />
 					<MaxLengthSelector value={[256]} />
 					<TopPSelector value={[0.9]} />
@@ -147,7 +219,7 @@
 				<div class="md:order-1">
 					<Tabs.Content value="complete" class="mt-0 h-full w-full border-0 p-0">
 						<div class="flex h-full flex-col space-y-4">
-							<TestFlow bind:this={TournamentFlow}/>
+							<TestFlow bind:this={TournamentFlow} />
 						</div>
 					</Tabs.Content>
 					<Tabs.Content value="insert" class="mt-0 h-full w-full border-0 p-0">
