@@ -28,21 +28,21 @@
 	{#each match.teams as team, index}
 		<ContextMenu>
 			<ContextMenuTrigger>
-				<div class={`flex items-center ${index === 0 ? 'border-b border-gray-600' : ''}`}>
+				<div class={`flex flex-row  ${index === 0 ? 'border-b border-gray-600' : ''}`}>
 					<!-- Elegant dark background for team ID -->
-					<span class="w-6 border-r bg-gray-700 py-1 text-center text-gray-300"
-						>{team.id == -1 ? '-' : team.id}</span
+					<div class=" w-[25px] h-[100%]  border-r bg-gray-700 py-1 text-center text-gray-300"
+						>{team.id == -1 ? '-' : team.id}</div
 					>
 					<!-- Subtle contrast for team name with a smooth dark background -->
-					<span class="flex-grow truncate bg-gray-800 py-1 text-gray-100">{team.name}</span>
+					<div class="w-full truncate text-left pl-1 bg-gray-800 py-1 text-gray-100">{team.name}</div>
 				</div>
 			</ContextMenuTrigger>
 			<ContextMenuContent>
 				<ContextMenuItem on:click={() => handleContextMenuAction('Edit', team.id)}>
-					Edit Team
+					Set Winner {team.id}
 				</ContextMenuItem>
 				<ContextMenuItem on:click={() => handleContextMenuAction('Remove', team.id)}>
-					Remove from Match
+					Edit Team
 				</ContextMenuItem>
 			</ContextMenuContent>
 		</ContextMenu>

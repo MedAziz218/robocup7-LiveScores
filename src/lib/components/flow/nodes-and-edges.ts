@@ -264,7 +264,7 @@ export function generateTournament(numberOfTeams: number, start_initial: number 
 	return tournament;
 }
 export function updateTournamentTeams(tournament: Tournament, teamNames: string[]): Tournament {
-	let x_id = 0;
+	let x_id = 1;
 	for (let i = 1; i >=0; i--) {
 		const round = tournament[i];
 		for (let j = 0; j < round.length; j++) {
