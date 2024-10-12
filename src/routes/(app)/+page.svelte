@@ -21,19 +21,20 @@
 	import * as HoverCard from '$lib/components/ui/hover-card/index.js';
 	import { LightSwtich, CsvUploader } from '$lib/components/custom';
 	import { TournamentFlow } from '$lib/components/flow';
-	import { isFullScreen } from '$lib/components/flow/stores';
 
+	import { isFullScreen, ConfigToString, StringToConfig } from '$lib/components/flow/stores';
 	import type { TournamentFlowInteface } from '$lib/components/flow/tournament-flow.svelte';
+
 	import { createModelList, type Model } from '$lib/(data)/models';
 	import { DialogTextArea } from '$lib/components/custom';
 	import { onMount } from 'svelte';
 	import { useSvelteFlow, useNodes } from '@xyflow/svelte';
+
 	const { zoomIn, zoomOut, setZoom, fitView, setCenter, setViewport, getViewport, viewport } =
 		useSvelteFlow();
 	let models: Model[] = [];
 	let usefulCsvKeyIndexes: number[];
 	let loadedCsvData: string[][];
-	let teamsDataString = '';
 
 	let TournamentFlowInstance: TournamentFlowInteface;
 	let uploadButtonDisabled = false;
@@ -68,14 +69,26 @@
 			return arr.filter((val, i) => val || keys[i]);
 		});
 	}
-	let dialogComponent: DialogTextArea;
+
+	let settingsDialogComponent: DialogTextArea;
+	let settingsString = '';
+	function openSettingsDialog(onConfirm: () => void = () => {}) {
+		settingsString = ConfigToString();
+		settingsDialogComponent.openDialog(onConfirm);
+	}
+	function settingsDialogConfirm(event: CustomEvent<string>) {
+		StringToConfig(settingsString);
+	}
+
+	let teamsDataDialogComponent: DialogTextArea;
+	let teamsDataString = '';
 	function applyTeams() {
 		TournamentFlowInstance.applyTeams(teamsDataString.split('\n'));
 	}
-	function openTheDialog(onConfirm: () => void = () => {}) {
-		dialogComponent.openDialog(onConfirm);
+	function openTeamsDataDialog(onConfirm: () => void = () => {}) {
+		teamsDataDialogComponent.openDialog(onConfirm);
 	}
-	function handleConfirm(event: CustomEvent<string>) {
+	function teamsDataDialogConfirm(event: CustomEvent<string>) {
 		console.log('Confirmed text:', event.detail);
 		localStorage.setItem('teamsDataString', teamsDataString);
 		// Handle the confirmed text here
@@ -100,7 +113,7 @@
 			}
 			teamsDataString += '\n';
 		}
-		openTheDialog();
+		openTeamsDataDialog();
 	}
 	onMount(() => {
 		const savedData = localStorage.getItem('teamsDataString');
@@ -118,10 +131,16 @@
 </div>
 <div class="flex h-screen flex-col">
 	<DialogTextArea
-		bind:this={dialogComponent}
-		on:confirm={handleConfirm}
+		bind:this={teamsDataDialogComponent}
+		on:confirm={teamsDataDialogConfirm}
 		bind:textareaContent={teamsDataString}
-		title="Teams"
+		title="Teams Data"
+	/>
+	<DialogTextArea
+		bind:this={settingsDialogComponent}
+		on:confirm={settingsDialogConfirm}
+		bind:textareaContent={settingsString}
+		title="Teams Data"
 	/>
 	{#if !$isFullScreen}
 		<div
@@ -259,8 +278,9 @@
 							disabled={!usefulCsvKeyIndexes?.length || !loadedCsvData}
 							variant="outline">Generate teams</Button
 						>
-						<Button on:click={() => openTheDialog()} variant="secondary">Edit Teams</Button>
-						<Button on:click={() => openTheDialog(applyTeams)} variant="default">Apply Teams</Button
+						<Button on:click={() => openTeamsDataDialog()} variant="secondary">Edit Teams</Button>
+						<Button on:click={() => openTeamsDataDialog(applyTeams)} variant="default"
+							>Apply Teams</Button
 						>
 
 						<!-- <TemperatureSelector value={[0.56]} />

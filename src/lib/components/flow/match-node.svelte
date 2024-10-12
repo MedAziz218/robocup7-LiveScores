@@ -21,13 +21,21 @@
 
 	const { updateNodeData } = useSvelteFlow();
 	type $$Props = NodeProps;
-	// export let id: $$Props['id'];
+	export let id: $$Props['id'];
 	export let data: $$Props['data'];
 
-	type matchType = { id: number; winnerGoesTo: number;winnerID: number ; teams: { id: number; name: string }[],};
+	type matchType = {
+		id: number;
+		winnerGoesTo: number;
+		winnerID: number;
+		teams: { id: number; name: string }[];
+	};
 	let match: matchType;
+	let winnerID = -1;
+
 	$: if (data) {
 		match = data.match as matchType;
+		winnerID = data.winnerID ? data.winnerID : -1;
 	}
 	const nodes = useNodes();
 	const edges = useEdges();
@@ -38,7 +46,6 @@
 	let hideTeams = false;
 	$: playable = match.teams.filter((t) => t.id == -1).length == 0;
 	$: focused = $focusedNode == match.id;
-	let winnerID = -1;
 
 	function handleContextMenuAction(action: string, teamId: number) {
 		console.log(`Action: ${action}, Team ID: ${teamId}`);
@@ -53,15 +60,17 @@
 					t.name = '-';
 				}
 				return t;
-			})
+			});
 		}
 
 		if (action.toLowerCase() === 'setwinner') {
 			if (winnerID == teamId) {
 				winnerID = -1;
-				
+				updateNodeData(id, {winnerID: winnerID});
+
+
 				let nextNodeID = match.winnerGoesTo.toString();
-				let nextNode= $nodes.find((n) => n.id == nextNodeID);
+				let nextNode = $nodes.find((n) => n.id == nextNodeID);
 				if (!nextNodeID || !nextNode) {
 					console.error('node not found');
 					return;
@@ -70,18 +79,19 @@
 				console.log(`nextNode= ${JSON.stringify(nextNode)}`);
 
 				let nextMatch = nextNode.data.match as matchType;
-				let newTeams = nextMatch.teams.map((t)=>{
+				let newTeams = nextMatch.teams.map((t) => {
 					if (t.id == teamId) {
-						return {id:-1,name:'-'};
+						return { id: -1, name: '-' };
 					}
 					return t;
-				})
-				
-				console.log(`newTeams=${JSON.stringify(newTeams)}`)
-				updateNodeData(nextNodeID, {match: {...nextMatch,teams:newTeams}});
+				});
 
+				console.log(`newTeams=${JSON.stringify(newTeams)}`);
+				updateNodeData(nextNodeID, { match: { ...nextMatch, teams: newTeams } });
 			} else {
 				winnerID = teamId;
+				updateNodeData(id, {winnerID: winnerID});
+
 				let otherTeamID = match.teams.filter((t) => t.id != teamId)[0].id;
 				let winnerTeam = match.teams.find((t) => t.id == winnerID);
 				if (!winnerTeam) {
@@ -89,7 +99,7 @@
 					return;
 				}
 				let nextNodeID = match.winnerGoesTo.toString();
-				let nextNode= $nodes.find((n) => n.id == nextNodeID);
+				let nextNode = $nodes.find((n) => n.id == nextNodeID);
 				if (!nextNodeID || !nextNode) {
 					console.error('node not found');
 					return;
@@ -98,26 +108,28 @@
 				console.log(`nextNode= ${JSON.stringify(nextNode)}`);
 
 				let nextMatch = nextNode.data.match as matchType;
-				let i = nextMatch.teams.findIndex((t) => (t.id == otherTeamID));
-				if (i ==-1){
-					i = nextMatch.teams.findIndex((t) => (t.id == -1));
-					
+				let i = nextMatch.teams.findIndex((t) => t.id == otherTeamID);
+				if (i == -1) {
+					i = nextMatch.teams.findIndex((t) => t.id == -1);
 				}
 				if (i == -1) {
 					console.log(nextMatch.teams);
 					console.log('object not found');
 					return;
 				}
-				let newTeams= [{ id: winnerTeam.id, name: winnerTeam.name },... nextMatch.teams.filter((t,x) => (x!=i  ))];
+				let newTeams = [
+					{ id: winnerTeam.id, name: winnerTeam.name },
+					...nextMatch.teams.filter((t, x) => x != i)
+				];
 				newTeams.sort((a, b) => a.id - b.id);
-				console.log(`newTeams=${JSON.stringify(newTeams)}`)
-				updateNodeData(nextNodeID, {match: {...nextMatch,teams:newTeams}});
+				console.log(`newTeams=${JSON.stringify(newTeams)}`);
+				updateNodeData(nextNodeID, { match: { ...nextMatch, teams: newTeams } });
 			}
 		}
 	}
 </script>
 
-<div class="absolute left-[-1rem] top-1/2 -translate-y-1/2 ">
+<div class="absolute left-[-1rem] top-1/2 -translate-y-1/2">
 	{match.id}
 </div>
 <div class={'overflow-hidden text-xs' + (focused ? ' border border-green-500' : '')}>

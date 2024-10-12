@@ -1,6 +1,7 @@
 import { Position, type Node, type Edge } from '@xyflow/svelte';
 import { quadInOut } from 'svelte/easing';
-
+import { XoffsetStore, YoffsetStore, nodeHeightStore } from './stores';
+import { get } from 'svelte/store';
 function closestLowerPowerOfTwo(n: number) {
 	if (n <= 0) {
 		return 0; // 2^0 = 1 is the closest power of 2 for non-positive numbers
@@ -8,16 +9,6 @@ function closestLowerPowerOfTwo(n: number) {
 
 	const lowerPower = Math.floor(Math.log2(n)); // Get the largest power of 2 less than or equal to n
 	return Math.pow(2, lowerPower);
-	// const upperPower = lowerPower + 1; // The next power of 2
-
-	// const lowerValue = Math.pow(2, lowerPower); // Calculate 2^lowerPower
-	// const upperValue = Math.pow(2, upperPower); // Calculate 2^upperPower
-
-	// // Compare which is closer to n
-	// const lowerDiff = Math.abs(n - lowerValue);
-	// const upperDiff = Math.abs(n - upperValue);
-
-	// return lowerDiff < upperDiff ? lowerValue : upperValue; // Return the closest power of 2
 }
 
 type Team = { id: number; name: string; club?: string };
@@ -37,13 +28,20 @@ const empty_teams: Team[] = [
 	{ id: -1, name: '-' },
 	{ id: -1, name: '-' }
 ];
-const Xoffset = 250;
-const nodeHeight = 50;
-const Yoffset = 10;
 
 export function createNodeFromMatch(match: Match): Node {
-	let { id: matchID, teams,winnerGoesTo ,roundNumber, index, XoffsetModifer, YoffsetModifer } = match;
-
+	let {
+		id: matchID,
+		teams,
+		winnerGoesTo,
+		roundNumber,
+		index,
+		XoffsetModifer,
+		YoffsetModifer
+	} = match;
+	const Xoffset = get(XoffsetStore);
+	const nodeHeight = get(nodeHeightStore);
+	const Yoffset = get(YoffsetStore);
 	const p = Math.pow(2, roundNumber + YoffsetModifer - 1);
 	let Yoff = (nodeHeight + Yoffset) * p * (index - 1) + ((nodeHeight + Yoffset) * (p - 1)) / 2;
 	let Xoff = Xoffset * (roundNumber + XoffsetModifer);
@@ -53,8 +51,8 @@ export function createNodeFromMatch(match: Match): Node {
 			match: {
 				id: matchID,
 				teams: teams,
-				winnerGoesTo:winnerGoesTo,
-				winnerID:-1
+				winnerGoesTo: winnerGoesTo,
+				winnerID: -1
 			}
 		},
 		position: { x: Xoff, y: Yoff },
@@ -62,7 +60,7 @@ export function createNodeFromMatch(match: Match): Node {
 		class: 'svelte-flow__node-default p-0',
 		sourcePosition: Position.Right,
 		targetPosition: Position.Left,
-		width:200,
+		width: 200,
 		draggable: false,
 		connectable: false
 	};
@@ -258,7 +256,7 @@ export function generateTournament(numberOfTeams: number, start_initial: number 
 	for (let i = 0; i < firstRound.length; i++) {
 		if (firstRound[i].id in firstRoundSpots) {
 			firstRound[i].initialSpots = firstRoundSpots[firstRound[i].id];
-		}else {
+		} else {
 			firstRound[i].initialSpots = 2;
 		}
 	}
@@ -269,20 +267,20 @@ export function generateTournament(numberOfTeams: number, start_initial: number 
 }
 export function updateTournamentTeams(tournament: Tournament, teamNames: string[]): Tournament {
 	let x_id = 0;
-	for (let i = 1; i >=0; i--) {
+	for (let i = 1; i >= 0; i--) {
 		const round = tournament[i];
 		for (let j = 0; j < round.length; j++) {
 			const match = round[j];
 			if (!match.initialSpots) continue;
 			if (match.initialSpots === 2) {
 				match.teams = [
-					{ id: x_id+1, name: teamNames[x_id] },
+					{ id: x_id + 1, name: teamNames[x_id] },
 					{ id: x_id + 2, name: teamNames[x_id + 1] }
 				];
 				x_id += 2;
 			}
 			if (match.initialSpots === 1) {
-				match.teams = [empty_teams[0], { id: x_id+1, name: teamNames[x_id] }];
+				match.teams = [empty_teams[0], { id: x_id + 1, name: teamNames[x_id] }];
 				x_id += 1;
 			}
 		}
