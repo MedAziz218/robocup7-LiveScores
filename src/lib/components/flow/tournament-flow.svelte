@@ -16,7 +16,7 @@
 		Background,
 		BackgroundVariant,
 		MiniMap,
-		useSvelteFlow,
+		ControlButton,
 		type ColorMode,
 		type NodeTypes,
 		type Node,
@@ -33,13 +33,43 @@
 		updateTournamentTeams,
 		type Tournament
 	} from './nodes-and-edges';
+	import {
+		ScreenShare as FullScreenIcon,
+		Focus as FocusMatchIcon,
+		SkipForward as FocusNextMatchIcon,
+		SkipBack as FocusPreviousMatchIcon
+	} from 'lucide-svelte';
+	import { isFullScreen, focusedNode } from '$lib/components/flow/stores';
+	import { focusNodeAnimation } from '$lib/components/flow/stores';
+
+	import { useSvelteFlow, useNodes } from '@xyflow/svelte';
+	const { zoomIn, zoomOut, setZoom, fitView, setCenter, setViewport, getViewport, viewport } =
+		useSvelteFlow();
+
 	const { updateNodeData } = useSvelteFlow();
 	const tournament = writable<Tournament>([]);
 	const nodes = writable<Node[]>([]);
 	const edges = writable<Edge[]>([]);
 	const teamsList = writable<string[]>([]);
 	const tournamentSize = writable(0);
+	// Function to save store data to local storage
+	function saveToLocalStorage() {
+		// Convert the stores to JSON strings and save them in localStorage
+		nodes.subscribe((value) => localStorage.setItem('nodes', JSON.stringify(value)));
+		edges.subscribe((value) => localStorage.setItem('edges', JSON.stringify(value)));
+		teamsList.subscribe((value) => localStorage.setItem('teamsList', JSON.stringify(value)));
+	}
 
+	// Function to load data from local storage into the stores
+	function loadFromLocalStorage() {
+		const savedNodes = localStorage.getItem('nodes');
+		const savedEdges = localStorage.getItem('edges');
+		const savedTeamsList = localStorage.getItem('teamsList');
+
+		if (savedNodes) nodes.set(JSON.parse(savedNodes));
+		if (savedEdges) edges.set(JSON.parse(savedEdges));
+		if (savedTeamsList) teamsList.set(JSON.parse(savedTeamsList));
+	}
 	let colorMode: ColorMode = 'dark';
 	export function setTeamsList(teamsNamesList: string[]): void {
 		teamsList.set(teamsNamesList);
@@ -60,7 +90,6 @@
 			initTournament(teams.length);
 		}
 		$tournament = updateTournamentTeams($tournament, teams);
-
 	}
 
 	export const saveTournament = (name: string) => {
@@ -110,19 +139,9 @@
 	}
 
 	onMount(() => {
-		initTournament(16);
-		// setTimeout(() => {
-		// 	$tournament = $tournament.map((round) => {
-		// 		return round.map((match, i) => {
-		// 			match.teams = [
-		// 				{ id: 0, name: 'pp' },
-		// 				{ id: 1, name: 'qq' }
-		// 			];
-		// 			return match;
-		// 		});
-		// 	});
-		// 	console.log('trah jarrab');
-		// }, 4000);
+		loadFromLocalStorage();
+		saveToLocalStorage();
+		// initTournament(16);
 	});
 </script>
 
@@ -145,8 +164,35 @@
 	>
 		<Controls
 			style="transition-duration:300ms;"
-			class="opacity-0 transition-opacity hover:opacity-60"
-		/>
+			showLock={false}
+			showZoom={false}
+			showFitView={true}
+		>
+			<!-- class= "opacity-0 transition-opacity hover:opacity-60" -->
+			<!-- <ControlButton on:click={() => console.log('⚡️')}>⚡️</ControlButton> -->
+			<ControlButton
+				on:click={() => {
+					$isFullScreen = !$isFullScreen;
+				}}><FullScreenIcon /></ControlButton
+			>
+			<ControlButton
+				on:click={() => {
+					$focusedNode = $focusedNode - 1;
+					fitView({ ...$focusNodeAnimation, nodes: [{ id: $focusedNode.toString() }] });
+				}}><FocusPreviousMatchIcon /></ControlButton
+			>
+			<ControlButton
+				on:click={() => {
+					fitView({ ...$focusNodeAnimation, nodes: [{ id: $focusedNode.toString() }] });
+				}}><FocusMatchIcon /></ControlButton
+			>
+			<ControlButton
+				on:click={() => {
+					$focusedNode = $focusedNode + 1;
+					fitView({ ...$focusNodeAnimation, nodes: [{ id: $focusedNode.toString() }] });
+				}}><FocusNextMatchIcon /></ControlButton
+			>
+		</Controls>
 		<Background variant={BackgroundVariant.Dots} />
 		<MiniMap
 			style="transition-duration:300ms;"

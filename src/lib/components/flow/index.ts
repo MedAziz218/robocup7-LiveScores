@@ -1,3 +1,3 @@
-export { default as TestFlow } from "./test-flow.svelte";
+export { default as TournamentFlow } from "./tournament-flow.svelte";
 
 
