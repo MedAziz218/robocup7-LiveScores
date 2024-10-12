@@ -23,7 +23,6 @@
 		type Edge
 	} from '@xyflow/svelte';
 	import '@xyflow/svelte/dist/style.css';
-	import ParticipantNode from './participant-node.svelte';
 	import MatchNode from './match-node.svelte';
 	import { mode } from 'mode-watcher';
 	import { onMount } from 'svelte';
@@ -39,13 +38,16 @@
 		SkipForward as FocusNextMatchIcon,
 		SkipBack as FocusPreviousMatchIcon
 	} from 'lucide-svelte';
-	import { isFullScreen, focusedNode } from '$lib/components/flow/stores';
+	import { isFullScreen, focusedNode, triggerFocusNodeAnimation} from '$lib/components/flow/stores';
 	import { focusNodeAnimation } from '$lib/components/flow/stores';
 
 	import { useSvelteFlow, useNodes } from '@xyflow/svelte';
 	const { zoomIn, zoomOut, setZoom, fitView, setCenter, setViewport, getViewport, viewport } =
 		useSvelteFlow();
-
+	$: if($triggerFocusNodeAnimation){
+		fitView({ ...$focusNodeAnimation, nodes: [{ id: $focusedNode.toString() }] });
+		$triggerFocusNodeAnimation = false
+	}
 	const { updateNodeData } = useSvelteFlow();
 	const tournament = writable<Tournament>([]);
 	const nodes = writable<Node[]>([]);
@@ -105,7 +107,6 @@
 	};
 
 	const nodeTypes = {
-		participant: ParticipantNode,
 		match: MatchNode
 	};
 	const defaultEdgeOptions = {

@@ -42,7 +42,7 @@ const nodeHeight = 50;
 const Yoffset = 10;
 
 export function createNodeFromMatch(match: Match): Node {
-	let { id: matchID, teams, roundNumber, index, XoffsetModifer, YoffsetModifer } = match;
+	let { id: matchID, teams,winnerGoesTo ,roundNumber, index, XoffsetModifer, YoffsetModifer } = match;
 
 	const p = Math.pow(2, roundNumber + YoffsetModifer - 1);
 	let Yoff = (nodeHeight + Yoffset) * p * (index - 1) + ((nodeHeight + Yoffset) * (p - 1)) / 2;
@@ -52,7 +52,9 @@ export function createNodeFromMatch(match: Match): Node {
 		data: {
 			match: {
 				id: matchID,
-				teams: teams
+				teams: teams,
+				winnerGoesTo:winnerGoesTo,
+				winnerID:-1
 			}
 		},
 		position: { x: Xoff, y: Yoff },
@@ -264,7 +266,7 @@ export function generateTournament(numberOfTeams: number, start_initial: number 
 	return tournament;
 }
 export function updateTournamentTeams(tournament: Tournament, teamNames: string[]): Tournament {
-	let x_id = 1;
+	let x_id = 0;
 	for (let i = 1; i >=0; i--) {
 		const round = tournament[i];
 		for (let j = 0; j < round.length; j++) {
@@ -272,13 +274,13 @@ export function updateTournamentTeams(tournament: Tournament, teamNames: string[
 			if (!match.initialSpots) continue;
 			if (match.initialSpots === 2) {
 				match.teams = [
-					{ id: x_id, name: teamNames[x_id] },
-					{ id: x_id + 1, name: teamNames[x_id + 1] }
+					{ id: x_id+1, name: teamNames[x_id] },
+					{ id: x_id + 2, name: teamNames[x_id + 1] }
 				];
 				x_id += 2;
 			}
 			if (match.initialSpots === 1) {
-				match.teams = [empty_teams[0], { id: x_id, name: teamNames[x_id] }];
+				match.teams = [empty_teams[0], { id: x_id+1, name: teamNames[x_id] }];
 				x_id += 1;
 			}
 		}
