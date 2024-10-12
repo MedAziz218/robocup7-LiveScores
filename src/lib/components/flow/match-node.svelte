@@ -21,7 +21,7 @@
 
 	const { updateNodeData } = useSvelteFlow();
 	type $$Props = NodeProps;
-	export let id: $$Props['id'];
+	// export let id: $$Props['id'];
 	export let data: $$Props['data'];
 
 	type matchType = { id: number; winnerGoesTo: number;winnerID: number ; teams: { id: number; name: string }[],};
@@ -117,7 +117,7 @@
 	}
 </script>
 
-<div class="absolute left-[-1rem] top-1/2 -translate-y-1/2">
+<div class="absolute left-[-1rem] top-1/2 -translate-y-1/2 ">
 	{match.id}
 </div>
 <div class={'overflow-hidden text-xs' + (focused ? ' border border-green-500' : '')}>

@@ -37,7 +37,7 @@ const empty_teams: Team[] = [
 	{ id: -1, name: '-' },
 	{ id: -1, name: '-' }
 ];
-const Xoffset = 220;
+const Xoffset = 250;
 const nodeHeight = 50;
 const Yoffset = 10;
 
@@ -62,6 +62,7 @@ export function createNodeFromMatch(match: Match): Node {
 		class: 'svelte-flow__node-default p-0',
 		sourcePosition: Position.Right,
 		targetPosition: Position.Left,
+		width:200,
 		draggable: false,
 		connectable: false
 	};
@@ -74,7 +75,8 @@ function createEdgeFromMatch(match: Match): Edge {
 		id: `edge-${matchID}-${matchWinnerGoesTo}`,
 		source: matchID.toString(),
 		target: matchWinnerGoesTo.toString(),
-		type: 'step'
+		type: 'step',
+		style: 'stroke-width: 3px;'
 	};
 	return edge;
 }
