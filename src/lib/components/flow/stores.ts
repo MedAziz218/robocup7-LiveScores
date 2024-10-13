@@ -16,7 +16,40 @@ export const focusNodeAnimation = writable({
 	maxZoom: 2.25,
 	duration: 1000
 });
+export function SaveConfig() {
+	const configText = ConfigToString();
+	localStorage.setItem('config', configText);
+}
+export function loadConfig() {
+	const configText = localStorage.getItem('config');
+	if (configText) {
+		StringToConfig(configText);
+	}
+}
 
+export function autoSaveConfig() {
+	isFullScreen.subscribe((value) => {
+		SaveConfig();
+	});
+	focusedNode.subscribe((value) => {
+		SaveConfig();
+	});
+	triggerFocusNodeAnimation.subscribe((value) => {
+		SaveConfig();
+	});
+	XoffsetStore.subscribe((value) => {
+		SaveConfig();
+	});
+	nodeHeightStore.subscribe((value) => {
+		SaveConfig();
+	});
+	YoffsetStore.subscribe((value) => {
+		SaveConfig();
+	});
+	focusNodeAnimation.subscribe((value) => {
+		SaveConfig();
+	});
+}
 export function ConfigToString() {
 	let configText = JSON.stringify(
 		{

@@ -22,7 +22,7 @@
 	import { LightSwtich, CsvUploader } from '$lib/components/custom';
 	import { TournamentFlow } from '$lib/components/flow';
 
-	import { isFullScreen,focusedNode, ConfigToString, StringToConfig } from '$lib/components/flow/stores';
+	import { isFullScreen,focusedNode, ConfigToString, StringToConfig ,autoSaveConfig,loadConfig} from '$lib/components/flow/stores';
 	import type { TournamentFlowInteface } from '$lib/components/flow/tournament-flow.svelte';
 
 	import { createModelList, type Model } from '$lib/(data)/models';
@@ -78,6 +78,8 @@
 	}
 	function settingsDialogConfirm(event: CustomEvent<string>) {
 		StringToConfig(settingsString);
+		localStorage.setItem('config', settingsString);
+
 	}
 
 	let teamsDataDialogComponent: DialogTextArea;
@@ -124,6 +126,8 @@
 		if (savedData) {
 			teamsDataString = savedData; // Load saved data if it exists
 		}
+		loadConfig();
+		autoSaveConfig();
 	});
 
 	// Save to localStorage whenever teamsDataString changes
