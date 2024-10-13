@@ -6,6 +6,8 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Switch } from '$lib/components/ui/switch/index.js';
+	export let openSettingFunction = () => {};
+	export let resetAnimationFunction = () => {};
 
 	let open = false;
 	let showDeleteDialog = false;
@@ -19,7 +21,10 @@
 		</Button>
 	</DropdownMenu.Trigger>
 	<DropdownMenu.Content align="end">
-		<DropdownMenu.Item on:click={() => (open = true)}>Content filter preferences</DropdownMenu.Item>
+		<DropdownMenu.Item on:click={() => resetAnimationFunction()}>Reset Animation</DropdownMenu.Item>
+		<DropdownMenu.Separator />
+		<DropdownMenu.Item on:click={() => openSettingFunction()}>Settings</DropdownMenu.Item>
+		<!-- <DropdownMenu.Item on:click={() => (open = true)}>Content filter preferences</DropdownMenu.Item> -->
 		<DropdownMenu.Separator />
 		<DropdownMenu.Item on:click={() => (showDeleteDialog = true)} class="text-red-600">
 			Delete preset
@@ -67,7 +72,7 @@
 				variant="destructive"
 				on:click={() => {
 					localStorage.clear();
-					location.reload()
+					location.reload();
 				}}
 			>
 				Delete

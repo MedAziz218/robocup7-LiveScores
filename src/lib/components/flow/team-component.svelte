@@ -1,12 +1,41 @@
 <script lang="ts">
-	export let id: number;
-	export let name: string;
-	export let index: number;
+	import {focusedNode} from './stores';
+	export let teamid: number;
+	export let teamName: string;
+	export let matchid: number;
 	export let mode: 'winner' | 'loser' | 'default' = 'default';
+	
+	const randomTextAnimDuration = 500;
+	let hideText = false;
+	let canAnimate = teamid != -1;
+	let hiddenText = "*********"
+	let currentText = hiddenText;
+	$: displayName = !canAnimate? teamName :  hideText && teamid!=-1? currentText :teamName
+	
+	$: if ($focusedNode == 0 && teamid !== -1) {
+		hideText = true;
+		currentText = hiddenText
+	}
+	$: if ($focusedNode === matchid && hideText) {
+		startAimation();
+	}
+	$: idDisplay = teamid === -1 ? '-' : teamid;
+	$: ariaLabel = `Team ID: ${teamid === -1 ? 'Not available' : teamid}, Status: ${mode}`;
+	function startAimation(){
+		currentText = ''
+		let lastIndex = 0;
+		let interval = setInterval(() => {
+			currentText += teamName[lastIndex];
+			lastIndex++;
+			if (lastIndex >= teamName.length) {
+				clearInterval(interval);
+				hideText = false;
+			}
+		}, randomTextAnimDuration/teamName.length);
+		
 
-	$: isFirstItem = index === 0;
-	$: idDisplay = id === -1 ? '-' : id;
-	$: ariaLabel = `Team ID: ${id === -1 ? 'Not available' : id}, Status: ${mode}`;
+
+	}
 </script>
 
 <div
@@ -31,11 +60,11 @@
              dark:bg-[#E1DBBD] "
 	>
 		{#if mode === 'winner'}
-			<span class="font-bold">🏆 {name}</span>
+			<span class="font-bold">🏆 {teamName}</span>
 		{:else if mode === 'loser'}
-			<span class="line-through">{name}</span>
+			<span class="line-through">{teamName}</span>
 		{:else}
-			{name}
+			{displayName}
 		{/if}
 	</div>
 </div>

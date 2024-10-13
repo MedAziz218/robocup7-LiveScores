@@ -38,15 +38,19 @@
 		SkipForward as FocusNextMatchIcon,
 		SkipBack as FocusPreviousMatchIcon
 	} from 'lucide-svelte';
-	import { isFullScreen, focusedNode, triggerFocusNodeAnimation} from '$lib/components/flow/stores';
+	import {
+		isFullScreen,
+		focusedNode,
+		triggerFocusNodeAnimation
+	} from '$lib/components/flow/stores';
 	import { focusNodeAnimation } from '$lib/components/flow/stores';
 
 	import { useSvelteFlow, useNodes } from '@xyflow/svelte';
 	const { zoomIn, zoomOut, setZoom, fitView, setCenter, setViewport, getViewport, viewport } =
 		useSvelteFlow();
-	$: if($triggerFocusNodeAnimation){
+	$: if ($triggerFocusNodeAnimation) {
 		fitView({ ...$focusNodeAnimation, nodes: [{ id: $focusedNode.toString() }] });
-		$triggerFocusNodeAnimation = false
+		$triggerFocusNodeAnimation = false;
 	}
 	const { updateNodeData } = useSvelteFlow();
 	const tournament = writable<Tournament>([]);
@@ -57,8 +61,12 @@
 	// Function to save store data to local storage
 	function saveToLocalStorage() {
 		// Convert the stores to JSON strings and save them in localStorage
-		nodes.subscribe((value) => localStorage.setItem('nodes', JSON.stringify(value)));
-		edges.subscribe((value) => localStorage.setItem('edges', JSON.stringify(value)));
+		nodes.subscribe(
+			(value) => value?.length && localStorage.setItem('nodes', JSON.stringify(value))
+		);
+		edges.subscribe(
+			(value) => value?.length && localStorage.setItem('edges', JSON.stringify(value))
+		);
 		teamsList.subscribe((value) => localStorage.setItem('teamsList', JSON.stringify(value)));
 	}
 
@@ -152,7 +160,6 @@
   -->
 <div style:height="100%" style:width="100%">
 	<SvelteFlow
-	
 		{nodes}
 		{edges}
 		{colorMode}
@@ -175,6 +182,7 @@
 			<ControlButton
 				on:click={() => {
 					$isFullScreen = !$isFullScreen;
+					setTimeout(() => fitView(),1);
 				}}><FullScreenIcon /></ControlButton
 			>
 			<ControlButton

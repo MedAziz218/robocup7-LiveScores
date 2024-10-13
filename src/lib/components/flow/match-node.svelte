@@ -35,10 +35,11 @@
 
 	$: if (data) {
 		match = data.match as matchType;
+		//@ts-ignore
 		winnerID = data.winnerID ? data.winnerID : -1;
 	}
 	const nodes = useNodes();
-	const edges = useEdges();
+	// const edges = useEdges();
 	// $: {
 	// 	updateNodeData(id, { text: $nodeData?.data?.text?.toUpperCase() || '' });
 	// }
@@ -137,9 +138,9 @@
 		<ContextMenu>
 			<ContextMenuTrigger>
 				<TeamComponent
-					id={team.id}
-					name={team.name}
-					{index}
+					teamid={team.id}
+					teamName={team.name}
+					matchid={match.id}
 					mode={winnerID == -1 ? 'default' : winnerID == team.id ? 'winner' : 'loser'}
 				/>
 			</ContextMenuTrigger>

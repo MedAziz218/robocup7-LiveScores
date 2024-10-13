@@ -22,7 +22,7 @@
 	import { LightSwtich, CsvUploader } from '$lib/components/custom';
 	import { TournamentFlow } from '$lib/components/flow';
 
-	import { isFullScreen, ConfigToString, StringToConfig } from '$lib/components/flow/stores';
+	import { isFullScreen,focusedNode, ConfigToString, StringToConfig } from '$lib/components/flow/stores';
 	import type { TournamentFlowInteface } from '$lib/components/flow/tournament-flow.svelte';
 
 	import { createModelList, type Model } from '$lib/(data)/models';
@@ -111,9 +111,13 @@
 					teamsDataString += ' | ';
 				}
 			}
-			teamsDataString += '\n';
+			teamsDataString += i<loadedCsvData.length-1 ? '\n' :'';
 		}
 		openTeamsDataDialog();
+	}
+	function resetAnimation() {
+		fitView();
+		$focusedNode = 0;
 	}
 	onMount(() => {
 		const savedData = localStorage.getItem('teamsDataString');
@@ -177,7 +181,7 @@
 					<PresetShare />
 				</div> -->
 				<LightSwtich />
-				<PresetActions />
+				<PresetActions openSettingFunction={openSettingsDialog} resetAnimationFunction={resetAnimation} />
 			</div>
 		</div>
 		<Separator />
