@@ -17,7 +17,7 @@
 		currentText = hiddenText;
 	}
 	$: if ($focusedNode === matchid && hideText) {
-		startAimation();
+		setTimeout(() => startAimation(), 800);
 	}
 	$: idDisplay = teamid === -1 ? '-' : teamid;
 	$: ariaLabel = `Team ID: ${teamid === -1 ? 'Not available' : teamid}, Status: ${mode}`;

@@ -115,7 +115,7 @@
 		}
 		if (bracketSize === 'all') {
 			console.log(`CALLED gen t ${bracketSize}`);
-			const t = generateTournament($nodes.length+1);
+			const t = generateTournament(128);
 			updateNodesPosition(t);
 			// $edges = getNodesAndEdgesFromTournament(t)[1];
 		} else {
@@ -128,7 +128,7 @@
 		if ($tournamentSize !== teams.length) {
 			initTournament(128);
 		}
-		// $tournament = updateTournamentTeams($tournament, teams);
+		$tournament = updateTournamentTeams($tournament, teams);
 	}
 
 	export const saveTournament = (name: string) => {
@@ -174,7 +174,7 @@
 		// setTopBracket('all');
 		// You can perform different actions based on the selected value here
 	}
-	const bracketSizes = [128,32,8];
+	const bracketSizes = [32,8];
 	// Run the function whenever the selectedBracket changes
 	$: handleBracketSelection(selectedBracket);
 	onMount(() => {
@@ -252,7 +252,7 @@
 			>
 				<option value="all">All Brackets</option>
 				{#each bracketSizes as bracketSize}
-					{#if bracketSize < $nodes.length}
+					{#if bracketSize}
 						<option value={bracketSize}>Top {bracketSize}</option>
 					{/if}
 				{/each}
