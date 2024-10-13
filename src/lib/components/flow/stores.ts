@@ -8,6 +8,8 @@ export const triggerFocusNodeAnimation = writable<boolean>(false);
 export const XoffsetStore = writable<number>(250);
 export const nodeHeightStore = writable<number>(50);
 export const YoffsetStore = writable<number>(10);
+export const nodeWidthStore = writable<number>(220);
+
 
 export const focusNodeAnimation = writable({
 	padding: 0.1,
@@ -49,17 +51,22 @@ export function autoSaveConfig() {
 	focusNodeAnimation.subscribe((value) => {
 		SaveConfig();
 	});
+	nodeWidthStore.subscribe((value) => {
+		SaveConfig();
+	})
 }
 export function ConfigToString() {
 	let configText = JSON.stringify(
 		{
 			isFullScreen: get(isFullScreen),
 			focusedNode: get(focusedNode),
-			triggerFocusNodeAnimation: get(triggerFocusNodeAnimation),
-			XoffsetStore: get(XoffsetStore),
 			nodeHeightStore: get(nodeHeightStore),
+			nodeWidthStore: get(nodeWidthStore),
+			XoffsetStore: get(XoffsetStore),
 			YoffsetStore: get(YoffsetStore),
-			focusNodeAnimation: get(focusNodeAnimation)
+			focusNodeAnimation: get(focusNodeAnimation),
+			triggerFocusNodeAnimation: get(triggerFocusNodeAnimation),
+
 		},
 		null,
 		4
@@ -74,6 +81,7 @@ export function StringToConfig(configText: string) {
 		triggerFocusNodeAnimation.set(updatedConfig.triggerFocusNodeAnimation);
 		XoffsetStore.set(updatedConfig.XoffsetStore);
 		nodeHeightStore.set(updatedConfig.nodeHeightStore);
+		nodeWidthStore.set(updatedConfig.nodeWidthStore);
 		YoffsetStore.set(updatedConfig.YoffsetStore);
 		focusNodeAnimation.set(updatedConfig.focusNodeAnimation);
 	} catch (e) {

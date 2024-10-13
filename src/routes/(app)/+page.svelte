@@ -287,7 +287,7 @@
 							variant="outline">Generate teams</Button
 						>
 						<Button on:click={() => openTeamsDataDialog()} variant="secondary">Edit Teams</Button>
-						<Button on:click={() => openTeamsDataDialog(applyTeams)} variant="default"
+						<Button on:click={() => applyTeams()} variant="default"
 							>Apply Teams</Button
 						>
 

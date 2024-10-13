@@ -1,6 +1,6 @@
 import { Position, type Node, type Edge } from '@xyflow/svelte';
 import { quadInOut } from 'svelte/easing';
-import { XoffsetStore, YoffsetStore, nodeHeightStore } from './stores';
+import { XoffsetStore, YoffsetStore, nodeHeightStore,nodeWidthStore } from './stores';
 import { get } from 'svelte/store';
 function closestLowerPowerOfTwo(n: number) {
 	if (n <= 0) {
@@ -42,6 +42,7 @@ export function createNodeFromMatch(match: Match): Node {
 	const Xoffset = get(XoffsetStore);
 	const nodeHeight = get(nodeHeightStore);
 	const Yoffset = get(YoffsetStore);
+	const nodeWidth = get(nodeWidthStore)
 	const p = Math.pow(2, roundNumber + YoffsetModifer - 1);
 	let Yoff = (nodeHeight + Yoffset) * p * (index - 1) + ((nodeHeight + Yoffset) * (p - 1)) / 2;
 	let Xoff = Xoffset * (roundNumber + XoffsetModifer);
@@ -60,7 +61,7 @@ export function createNodeFromMatch(match: Match): Node {
 		class: 'svelte-flow__node-default p-0',
 		sourcePosition: Position.Right,
 		targetPosition: Position.Left,
-		width: 200,
+		width:nodeWidth ,
 		draggable: false,
 		connectable: false
 	};
