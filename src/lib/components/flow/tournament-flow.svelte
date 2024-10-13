@@ -1,8 +1,9 @@
 <script context="module" lang="ts">
 	export interface TournamentFlowInteface {
 		initTournament: (numberOfTeams: number) => void;
-		setTopBracket: (bracketSize: 'all' | 64 | 32 | 16 | 8) => void;
+		setTopBracket: (bracketSize: 'all' | 64 | 32 | 16 | 8 | number) => void;
 		applyTeams: (teams: string[]) => void;
+
 		// importTournament: (tournament: Tournament) => void;
 		// getCurrentNumberOfTeams: ()=> number;
 	}
@@ -30,6 +31,7 @@
 		generateTournament,
 		getNodesAndEdgesFromTournament,
 		updateTournamentTeams,
+		createNodeFromMatch,
 		type Tournament
 	} from './nodes-and-edges';
 	import {
@@ -88,11 +90,38 @@
 		$tournament = generateTournament(numberOfTeams);
 		$tournamentSize = numberOfTeams;
 	}
-	export function setTopBracket(bracketSize: 'all' | 64 | 32 | 16 | 8): void {
+	function updateNodesPosition(temp_t: Tournament): void {
+		$nodes.map((node) => {
+			node.hidden = true;
+			return node;
+		});
+		let [n, e] = getNodesAndEdgesFromTournament(temp_t);
+		for (let i = 0; i < $nodes.length; i++) {
+			const nn = n.find((n) => n.id == $nodes[i].id);
+			if (nn) {
+				// console.log(nn?.position)
+				$nodes[i].hidden = false;
+
+				$nodes[i].position = nn?.position;
+			}
+		}
+		// $nodes = n;
+		$edges = e;
+		setTimeout(() => fitView({duration: 500}), 1);
+	}
+	export function setTopBracket(bracketSize: 'all' | 64 | 32 | 16 | 8 | number): void {
+		if (!$nodes.length) {
+			return;
+		}
 		if (bracketSize === 'all') {
-			$tournament = generateTournament($tournamentSize);
+			console.log(`CALLED gen t ${bracketSize}`);
+			const t = generateTournament($nodes.length+1);
+			updateNodesPosition(t);
+			// $edges = getNodesAndEdgesFromTournament(t)[1];
 		} else {
-			$tournament = generateTournament(bracketSize, $tournamentSize - bracketSize);
+			const t = generateTournament(bracketSize, $nodes.length - bracketSize+1);
+			updateNodesPosition(t);
+			// $edges = getNodesAndEdgesFromTournament(t)[1];
 		}
 	}
 	export function applyTeams(teams: string[]): void {
@@ -123,15 +152,6 @@
 	};
 	const snapGrid: [number, number] = [25, 25];
 
-	// const fitViewOptions = {
-	// 	padding: 0.1,
-	// 	includeHiddenNodes: false,
-	// 	minZoom: 0.5,
-	// 	maxZoom: 1.5,
-	// 	duration: 1000,
-	// 	nodes: [{ id: '1' }] // nodes to fit
-	// };
-
 	$: if ($tournament) {
 		let [n, e] = getNodesAndEdgesFromTournament($tournament);
 
@@ -146,7 +166,17 @@
 	} else {
 		colorMode = 'system';
 	}
+	let selectedBracket = 'all'; // Default value
 
+	function handleBracketSelection(value: string) {
+		//@ts-ignore
+		setTopBracket(value == 'all' ? 'all' : parseInt(value));
+		// setTopBracket('all');
+		// You can perform different actions based on the selected value here
+	}
+	const bracketSizes = [64, 32, 16, 8];
+	// Run the function whenever the selectedBracket changes
+	$: handleBracketSelection(selectedBracket);
 	onMount(() => {
 		loadFromLocalStorage();
 		saveToLocalStorage();
@@ -176,13 +206,14 @@
 			showLock={false}
 			showZoom={false}
 			showFitView={true}
+			class="opacity-10 transition-opacity hover:opacity-60"
 		>
 			<!-- class= "opacity-0 transition-opacity hover:opacity-60" -->
 			<!-- <ControlButton on:click={() => console.log('⚡️')}>⚡️</ControlButton> -->
 			<ControlButton
 				on:click={() => {
 					$isFullScreen = !$isFullScreen;
-					setTimeout(() => fitView(),1);
+					setTimeout(() => fitView({duration: 500}), 1);
 				}}><FullScreenIcon /></ControlButton
 			>
 			<ControlButton
@@ -208,5 +239,24 @@
 			style="transition-duration:300ms;"
 			class="opacity-0 transition-opacity hover:opacity-60"
 		/>
+		<div
+			class="svelte-flow__panel svelte-flow__attribution top right mr-2 mt-2
+			 opacity-10 transition-opacity hover:opacity-60"
+		>
+			<select
+				id="brackets"
+				on:change={(e) => {
+					//@ts-ignore
+					handleBracketSelection(e.target?.value);
+				}}
+			>
+				<option value="all">All Brackets</option>
+				{#each bracketSizes as bracketSize}
+					{#if bracketSize < $nodes.length}
+						<option value={bracketSize}>Top {bracketSize}</option>
+					{/if}
+				{/each}
+			</select>
+		</div>
 	</SvelteFlow>
 </div>
